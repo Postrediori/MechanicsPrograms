@@ -1,0 +1,18 @@
+TITLE Vertical console
+E 2.0e+11
+F 5.0e-3
+
+NODES 2
+1 0.0 0.0
+2 0.0 1.0
+
+FIXED 3
+1 1
+1 2
+2 1
+
+LOADS 1
+2 0.0 100.0
+
+ELEMENTS 1
+1 1 2

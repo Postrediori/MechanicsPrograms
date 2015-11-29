@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.6)
 
 
 # Find packages
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../cmake-modules")
 find_package(OpenGL REQUIRED)
 find_package(FLTK REQUIRED)
 
@@ -12,6 +11,7 @@ find_package(FLTK REQUIRED)
 include_directories(
     ${OPENGL_INCLUDE_DIR}
     ${FLTK_INCLUDE_DIR})
+
 
 # Main executable
 set(simplexview_SRCS
@@ -39,7 +39,7 @@ endif()
 
 
 # Installation
-set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../bundle")
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../bundle/SimplexView")
 install(
     TARGETS simplexview
     DESTINATION ${CMAKE_INSTALL_PREFIX})

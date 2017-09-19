@@ -7,7 +7,7 @@ This is the collection of various applications for mechanics simulations and str
 All projects use CMake as build system. C++ code compatibility is tested
 with gcc-5 and Microsoft Visual Studio Express 2008 and 2012.
 
-## Build With
+## Built With
 
 * [CMake](https://cmake.org/) - Build system.
 * [FLTK](http://www.fltk.org) - Minimalistic cross-platform GUI toolkit with OpenGL capabilities.
@@ -22,8 +22,8 @@ with gcc-5 and Microsoft Visual Studio Express 2008 and 2012.
 for 1D and 2D models with GUI. Example models are written in plain-text format 
 and can be found in __models__ subdirectory.
 
-![FEMSolve screenshot](https://user-images.githubusercontent.com/856993/30521525-9c445c56-9bc9-11e7-819f-b99dfec19698.png)
-![FEMSolve report screenshot](https://user-images.githubusercontent.com/856993/30521518-8a315a6e-9bc9-11e7-9b41-acc4b0be3870.png)
+![FEMSolve screenshot](https://user-images.githubusercontent.com/856993/30612564-afc1e4cc-9d8d-11e7-87ff-549e2d77aad6.png)
+![FEMSolve report screenshot](https://user-images.githubusercontent.com/856993/30612581-c1030216-9d8d-11e7-817c-cedcadbff0d3.png)
 
 ### FinitElem
 
@@ -34,14 +34,14 @@ of console application.
 
 Graphical solver for fluid flow q and lambda functions that uses [Newton's method](https://en.wikipedia.org/wiki/Newton%27s_method).
 
-![FluidView screenshot](https://user-images.githubusercontent.com/856993/30521531-acc913c8-9bc9-11e7-8aa6-bd545eb10451.png)
+![FluidView screenshot](https://user-images.githubusercontent.com/856993/30612458-5368f2a6-9d8d-11e7-964a-04e94a1a971f.png)
 
 ### HazeDyn
 
 Calculator for fluid flow functions and reverse calculator
 for finding lambda parameter based on function value.
 
-![HazeDyn screenshot](https://user-images.githubusercontent.com/856993/30521536-c23f1b3a-9bc9-11e7-9ac1-640fb8c0d194.png)
+![HazeDyn screenshot](https://user-images.githubusercontent.com/856993/30612418-27a2beae-9d8d-11e7-8f86-0f504db09789.png)
 
 ### MediaWave
 
@@ -50,8 +50,7 @@ of limited length with various initial boundary conditions for the tube
 edges (e.g. closed, opened, with friction) as well as for pressure and velocity
 of a fluid.
 
-![MediaWave settings screenshot](https://user-images.githubusercontent.com/856993/30521540-d6a3ca44-9bc9-11e7-9c84-5525d27deb51.png)
-![MediaWave working screenshot](https://user-images.githubusercontent.com/856993/30521538-cc4fb12a-9bc9-11e7-932e-f45c42208297.png)
+![MediaWave working screenshot](https://user-images.githubusercontent.com/856993/30612172-687effec-9d8c-11e7-84fc-81e7de398922.png)
 
 ### SimplexView
 
@@ -66,11 +65,11 @@ methods are supported with graphical demonstration for each of them:
 * [Coordinate descent](https://en.wikipedia.org/wiki/Coordinate_descent).
 * Scanning method.
 
-![SimplexView screenshot](https://user-images.githubusercontent.com/856993/30521543-e1e6553e-9bc9-11e7-9fa9-a0540d3433e5.png)
+![SimplexView screenshot](https://user-images.githubusercontent.com/856993/30611865-689abeea-9d8b-11e7-8523-39688b65cc65.png)
 
 ### WaveView
 
 Graphical demonstration of fluid mechanics problem of a fluid in
 rectangular channel of infinite length.
 
-![WaveView screenshot](https://user-images.githubusercontent.com/856993/30521548-eb2eb87a-9bc9-11e7-836f-047dcc7fe631.png)
+![WaveView screenshot](https://user-images.githubusercontent.com/856993/30611938-af73b5ba-9d8b-11e7-86fc-0271d2dcd48e.png)

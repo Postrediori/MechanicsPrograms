@@ -15,6 +15,7 @@ include_directories(
 
 # Main executable
 set(hazedyn_SRCS
+    src/HazeFunc.cpp src/HazeFunc.h
     src/main.cpp)
 add_executable(hazedyn ${hazedyn_SRCS})
 target_link_libraries(hazedyn

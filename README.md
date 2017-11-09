@@ -1,4 +1,4 @@
-# Mechanics programs
+## Introduction
 
 This is the collection of various applications for mechanics simulations and structural engineering models. 
 
@@ -12,7 +12,7 @@ with gcc-5 and Microsoft Visual Studio Express 2008 and 2012.
 * [CMake](https://cmake.org/) - Build system.
 * [FLTK](http://www.fltk.org) - Minimalistic cross-platform GUI toolkit with OpenGL capabilities.
 
-## Environment setup
+## Environment Setup
 
 The following instructions install all required libraries for Fedora >= 22:
 
@@ -24,6 +24,24 @@ sudo dnf install \
     fltk-fluid
 ```
 
+## Building Projects
+
+The set of programs is built with the commands below.
+
+```
+cd MechanicsPrograms
+mkdir build && cd build
+cmake ..
+make
+```
+
+After the successful build the binary of `{Project}`  will end up in `build/{Project}/`.
+E.g. binary of `FEMSolve` can be launched from the build directory with the command
+
+```
+./FEMSolve/FEMSolve
+```
+ 
 ## Structure
 
 ### FEMSolve
@@ -32,8 +50,8 @@ sudo dnf install \
 for 1D and 2D models with GUI. Example models are written in plain-text format 
 and can be found in __models__ subdirectory.
 
-![FEMSolve screenshot](https://user-images.githubusercontent.com/856993/30612564-afc1e4cc-9d8d-11e7-87ff-549e2d77aad6.png)
-![FEMSolve report screenshot](https://user-images.githubusercontent.com/856993/30612581-c1030216-9d8d-11e7-817c-cedcadbff0d3.png)
+![FEMSolve screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/femsolve.png)
+![FEMSolve report screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/femsolve_report.png)
 
 ### FinitElem
 
@@ -44,14 +62,15 @@ of console application.
 
 Graphical solver for fluid flow q and lambda functions that uses [Newton's method](https://en.wikipedia.org/wiki/Newton%27s_method).
 
-![FluidView screenshot](https://user-images.githubusercontent.com/856993/30612458-5368f2a6-9d8d-11e7-964a-04e94a1a971f.png)
+![FluidView screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/fluidview.png)
 
 ### HazeDyn
 
 Calculator for fluid flow functions and reverse calculator
 for finding lambda parameter based on function value.
 
-![HazeDyn screenshot](https://user-images.githubusercontent.com/856993/30612418-27a2beae-9d8d-11e7-8f86-0f504db09789.png)
+![HazeDyn direct functions screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/hazedyn_direct.png)
+![HazeDyn reverse functions screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/hazedyn_reverse.png)
 
 ### MediaWave
 
@@ -60,7 +79,8 @@ of limited length with various initial boundary conditions for the tube
 edges (e.g. closed, opened, with friction) as well as for pressure and velocity
 of a fluid.
 
-![MediaWave working screenshot](https://user-images.githubusercontent.com/856993/30612172-687effec-9d8c-11e7-84fc-81e7de398922.png)
+![MediaWave simulation screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/mediawave.png)
+![MediaWave settings screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/mediawave_settings.png)
 
 ### SimplexView
 
@@ -78,12 +98,12 @@ methods are supported with graphical demonstration for each of them:
 Left mouse click on the 2D plot sets the new starting point for optimization
 method for the next scan.
 
-![SimplexView screenshot](https://user-images.githubusercontent.com/856993/30611865-689abeea-9d8b-11e7-8523-39688b65cc65.png)
+![SimplexView screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/simplexview.png)
 
 ### WaveView
 
 Graphical demonstration of fluid mechanics problem of a fluid in
 rectangular channel of infinite length.
 
-![WaveView screenshot](https://user-images.githubusercontent.com/856993/30611938-af73b5ba-9d8b-11e7-86fc-0271d2dcd48e.png)
+![WaveView screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/waveview.png)
 

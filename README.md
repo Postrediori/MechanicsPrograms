@@ -11,8 +11,18 @@ with gcc-5 and Microsoft Visual Studio Express 2008 and 2012.
 
 * [CMake](https://cmake.org/) - Build system.
 * [FLTK](http://www.fltk.org) - Minimalistic cross-platform GUI toolkit with OpenGL capabilities.
-* [GLEW](http://glew.sourceforge.net/) - Library for managing OpenGL extensions.
-* [GLM](https://glm.g-truc.net/) - Mathematics and GLSL compatibility library.
+
+## Environment setup
+
+The following instructions install all required libraries for Fedora >= 22:
+
+```
+sudo dnf install \
+    gcc-c++ \
+    cmake \
+    fltk-devel \
+    fltk-fluid
+```
 
 ## Structure
 
@@ -60,10 +70,13 @@ Later several other methods of function minimizaion were added. Now the followin
 methods are supported with graphical demonstration for each of them:
 
 * [Nelder–Mead method](https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method) with triangle as simplex polygon.
-* [Gauss-Seidel method](https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method).
+* [Gauss–Seidel method](https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method).
 * [Gradient descent](https://en.wikipedia.org/wiki/Gradient_descent).
 * [Coordinate descent](https://en.wikipedia.org/wiki/Coordinate_descent).
 * Scanning method.
+
+Left mouse click on the 2D plot sets the new starting point for optimization
+method for the next scan.
 
 ![SimplexView screenshot](https://user-images.githubusercontent.com/856993/30611865-689abeea-9d8b-11e7-8523-39688b65cc65.png)
 
@@ -73,3 +86,4 @@ Graphical demonstration of fluid mechanics problem of a fluid in
 rectangular channel of infinite length.
 
 ![WaveView screenshot](https://user-images.githubusercontent.com/856993/30611938-af73b5ba-9d8b-11e7-86fc-0271d2dcd48e.png)
+

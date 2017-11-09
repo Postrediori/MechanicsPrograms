@@ -59,20 +59,20 @@ int main(int argc, char **argv) {
     search_engines.box(FL_SHADOW_BOX);
     search_engines.begin();
 
-    Fl_Round_Button simplex_engine_btn(510, 260, 175, 23, "Simplex with reduction");
+    Fl_Round_Button simplex_engine_btn(510, 260, 175, 23, "Nelder-Mead method");
     simplex_engine_btn.type(FL_RADIO_BUTTON);
     simplex_engine_btn.callback(set_engine_cb, &simplex_engine);
     simplex_engine_btn.set();
 
-    Fl_Round_Button gausss_engine_btn(510, 290, 175, 23, "Gauss-Seidel (Bounce)");
+    Fl_Round_Button gausss_engine_btn(510, 290, 175, 23, "Gauss-Seidel method");
     gausss_engine_btn.type(FL_RADIO_BUTTON);
     gausss_engine_btn.callback(set_engine_cb, &gausss_engine);
 
-    Fl_Round_Button descent_engine_btn(510, 320, 175, 23, "Descent (Scaning)");
+    Fl_Round_Button descent_engine_btn(510, 320, 175, 23, "Gradient descent");
     descent_engine_btn.type(FL_RADIO_BUTTON);
     descent_engine_btn.callback(set_engine_cb, &descent_engine);
 
-    Fl_Round_Button relax_engine_btn(510, 350, 175, 23, "Relaxation (Scaning)");
+    Fl_Round_Button relax_engine_btn(510, 350, 175, 23, "Coordinate descent");
     relax_engine_btn.type(FL_RADIO_BUTTON);
     relax_engine_btn.callback(set_engine_cb, &relax_engine);
 

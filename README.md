@@ -21,7 +21,8 @@ sudo dnf install \
     gcc-c++ \
     cmake \
     fltk-devel \
-    fltk-fluid
+    fltk-fluid \
+    armadillo-devel
 ```
 
 ## Building Projects

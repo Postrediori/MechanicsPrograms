@@ -10,6 +10,7 @@ include(cmake/config.txt)
 #build
 add_subdirectory(FEMSolve)
 add_subdirectory(FinitElem)
+add_subdirectory(FinitElem2)
 add_subdirectory(FluidView)
 add_subdirectory(HazeDyn)
 add_subdirectory(MediaWave)

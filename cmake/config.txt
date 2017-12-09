@@ -1,0 +1,34 @@
+macro(make_project_)
+    if (NOT DEFINED PROJECT)
+        get_filename_component(PROJECT ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    endif ()
+
+    project(${PROJECT})
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
+
+    if (NOT DEFINED HEADERS)
+        file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
+    endif ()
+
+    if (NOT DEFINED SOURCES)
+        file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+    endif ()
+
+    source_group("Header Files" FILES ${HEADERS})
+    source_group("Source Files" FILES ${SOURCES})
+endmacro()
+
+macro(make_executable)
+    make_project_()
+    add_executable(${PROJECT} ${HEADERS} ${SOURCES})
+endmacro()
+
+macro(make_fltk_executable)
+    make_project_()
+    add_executable(${PROJECT} ${HEADERS} ${SOURCES})
+    target_link_libraries(${PROJECT}
+        ${OPENGL_LIBRARIES}
+        ${FLTK_BASE_LIBRARY}
+        ${FLTK_GL_LIBRARY})
+endmacro()

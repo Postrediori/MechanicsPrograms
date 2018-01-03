@@ -14,10 +14,33 @@ with gcc-5 and Microsoft Visual Studio Express 2008 and 2012.
 
 ## Environment Setup
 
-The following instructions install all required libraries for Fedora >= 22:
+### Debian-based Systems
+
+The following instructions are applied to these operating systems:
+
+* Ubuntu 16.04
+* Debian 9
 
 ```
-sudo dnf install \
+sudo apt-get install -y \
+    build-essential \
+    cmake \
+    libarmadillo-dev \
+    libfltk1.3-dev \
+    libfltk1.3-compat-headers
+```
+
+### RedHat-based Systems
+
+The following instructions are applied to these operating systems:
+
+* Fedora >=22
+
+```
+sudo dnf groupinstall -y \
+    "Development Tools" \
+    "Development Libraries"
+sudo dnf install -y \
     gcc-c++ \
     cmake \
     fltk-devel \

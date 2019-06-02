@@ -336,9 +336,9 @@ float HazeModel::pn4(float x) {
 /*
  * Function plot widget
  */
-typedef struct {
+struct Point2D {
     float x, y;
-} Point2D;
+};
 
 static const float DefXMin =-1.0;
 static const float DefXMax = 1.0;
@@ -375,6 +375,7 @@ private:
     void draw_box();
     void draw_ticks();
     void draw_axis();
+    void draw_heatmap();
     void draw_plot();
     void draw_legend();
 
@@ -522,6 +523,8 @@ void PlotWidget::print_text(void *font, float x, float y, unsigned char align, c
 }
 
 void PlotWidget::draw_box() {
+    glColor3fv(tick_color);
+
     glBegin(GL_LINE_LOOP);
     glVertex2f(xmin_, ymin_);
     glVertex2f(xmax_, ymin_);
@@ -531,6 +534,8 @@ void PlotWidget::draw_box() {
 }
 
 void PlotWidget::draw_ticks() {
+    glColor3fv(tick_color);
+
     glBegin(GL_LINES);
     if (ticks_x) {
         for (int i=0; i<=tick_count_; i++) {
@@ -549,6 +554,8 @@ void PlotWidget::draw_ticks() {
 }
 
 void PlotWidget::draw_axis() {
+    glColor3fv(axis_color);
+
     // X axis
     if (betweenf(ymin_, xaxis_, ymax_)) {
         glBegin(GL_LINES);
@@ -566,7 +573,42 @@ void PlotWidget::draw_axis() {
     }
 }
 
+void PlotWidget::draw_heatmap() {
+    static const size_t PaletteSize = 11;
+    static const GLubyte Palette[PaletteSize][4] = {
+        {0xa5, 0x00, 0x27, 0x00},
+        {0xd7, 0x30, 0x27, 0x00},
+        {0xf4, 0x6d, 0x43, 0x00},
+        {0xfd, 0xae, 0x61, 0x00},
+        {0xfe, 0xe0, 0x90, 0x00},
+        {0xff, 0xff, 0xbf, 0x00},
+        {0xe0, 0xf3, 0xf9, 0x00},
+        {0xab, 0xd9, 0xea, 0x00},
+        {0x74, 0xad, 0xd1, 0x00},
+        {0x45, 0x75, 0xb4, 0x00},
+        {0x31, 0x36, 0x95, 0x00},
+    };
+
+    glBegin(GL_QUADS);
+    if (points) {
+        for (int i=0; i<point_count_; i++) {
+            double y = points[i*2].y;
+            double t = 1. - (y - ymin_) / (ymax_ - ymin_);
+            size_t k = static_cast<size_t>((static_cast<double>(PaletteSize) * t)) % PaletteSize;
+            glColor4ubv(Palette[k]);
+
+            glVertex2f(points[i*2].x, ymin_);
+            glVertex2f(points[i*2+1].x, ymin_);
+            glVertex2f(points[i*2+1].x, ymax_);
+            glVertex2f(points[i*2].x, ymax_);
+        }
+    }
+    glEnd();
+
+}
+
 void PlotWidget::draw_plot() {
+    glColor3fv(plot_color);
     glBegin(GL_LINES);
     if (points) {
         for (int i=0; i<point_count_; i++) {
@@ -577,8 +619,10 @@ void PlotWidget::draw_plot() {
     glEnd();
 }
 
-#define LEGEND_FONT GLUT_BITMAP_8_BY_13
+#define LEGEND_FONT GLUT_BITMAP_HELVETICA_10
 void PlotWidget::draw_legend() {
+    glColor3fv(text_color);
+
     print_text(LEGEND_FONT, (xmax_-xmin_)/2.0, ymax_+margin_*pixel_y/2.0,
                ALIGN_CENTER | ALIGN_MIDDLE, this->label());
 
@@ -622,18 +666,16 @@ void PlotWidget::draw() {
     glClear(GL_COLOR_BUFFER_BIT);
     glLoadIdentity();
 
+    draw_heatmap();
+
     // Draw ticks and bounding box
-    glColor3fv(tick_color);
     this->draw_box();
     this->draw_ticks();
 
-    glColor3fv(axis_color);
     this->draw_axis();
 
-    glColor3fv(text_color);
     this->draw_legend();
 
-    glColor3fv(plot_color);
     this->draw_plot();
 
     glFinish();
@@ -664,7 +706,7 @@ void PlotWidget::plot(int count, float *x, float *y) {
 #define SIDE_OPEN   (void *)2
 #define SIDE_MANUAL (void *)3
 
-typedef struct {
+struct SettingsHelper {
     float L;
     int N;
 
@@ -680,7 +722,7 @@ typedef struct {
 
     float bl, cl;
     float br, cr;
-} SettingsHelper;
+};
 
 /*
  * Main Window

@@ -2,17 +2,10 @@ project(MechanicsPrograms)
 cmake_minimum_required(VERSION 2.8)
 
 # 3rd party
-include(cmake/3rdparty.txt)
+include(cmake/3rdparty.cmake)
 
 # common properties
-include(cmake/config.txt)
+include(cmake/config.cmake)
 
-#build
-add_subdirectory(FEMSolve)
-add_subdirectory(FinitElem)
-add_subdirectory(FinitElem2)
-add_subdirectory(FluidView)
-add_subdirectory(HazeDyn)
-add_subdirectory(MediaWave)
-add_subdirectory(SimplexView)
-add_subdirectory(WaveView)
+# projects
+add_subdirectory(src)

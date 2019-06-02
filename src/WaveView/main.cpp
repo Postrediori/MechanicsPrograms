@@ -224,9 +224,9 @@ static const int TickCount = 20;
 static const int TickSize = 15;
 static const int Margin = 40;
 
-typedef struct {
+struct Point2d {
     float x, y;
-} Point2d;
+};
 
 class WaveWidget: public Fl_Gl_Window {
     void draw();
@@ -316,6 +316,37 @@ void WaveWidget::draw() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+
+    /* Draw Heatmap */
+    // f7fbff - 08306b
+    if (model_) {
+        const GLubyte Color1[4] = {0xf7, 0xfb, 0xff, 0x00};
+        const GLubyte Color2[4] = {0x08, 0x30, 0x6b, 0x00};
+        GLubyte layerColor[4];
+
+        double scalex = (XMax - XMin) / model_->delta;
+        double scalez = (/*YMax*/ - YMin) / model_->h;
+        
+        for (int j=0; j<model_->zn-1; j++) {
+            glBegin(GL_TRIANGLE_STRIP);
+
+            double depth = static_cast<double>(j) / static_cast<double>(model_->zn - 1);
+            layerColor[0] = static_cast<GLubyte>(static_cast<double>(Color1[0]) + static_cast<double>(Color2[0] - Color1[0]) * depth);
+            layerColor[1] = static_cast<GLubyte>(static_cast<double>(Color1[1]) + static_cast<double>(Color2[1] - Color1[1]) * depth);
+            layerColor[2] = static_cast<GLubyte>(static_cast<double>(Color1[2]) + static_cast<double>(Color2[2] - Color1[2]) * depth);
+            glColor3ubv(layerColor);
+
+            for (int i=0; i<model_->xn; i++) {
+                glVertex3f(model_->points[i][j+1].x * scalex + XMin,
+                           ((model_->h + model_->points[i][j+1].z) * scalez) + YMin, 0.0);
+                glVertex3f(model_->points[i][j].x * scalex + XMin,
+                           ((model_->h + model_->points[i][j].z) * scalez) + YMin, 0.0);
+            }
+            glEnd();
+        }
+    }
+
+    /* */
 
     glColor3f(0.75, 0.75, 0.75);
 

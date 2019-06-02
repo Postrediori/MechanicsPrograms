@@ -18,6 +18,7 @@ with gcc-5 and Microsoft Visual Studio Express 2008 and 2012.
 
 The following instructions are applied to these operating systems:
 
+* Ubuntu 18.04
 * Ubuntu 16.04
 * Debian 9
 
@@ -74,8 +75,8 @@ E.g. binary of `FEMSolve` can be launched from the build directory with the comm
 for 1D and 2D models with GUI. Example models are written in plain-text format 
 and can be found in __models__ subdirectory.
 
-![FEMSolve screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/femsolve.png)
-![FEMSolve report screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/femsolve_report.png)
+![FEMSolve screenshot](images/femsolve.png)
+![FEMSolve report screenshot](images/femsolve_report.png)
 
 ### FinitElem
 
@@ -86,15 +87,15 @@ of console application.
 
 Graphical solver for fluid flow q and lambda functions that uses [Newton's method](https://en.wikipedia.org/wiki/Newton%27s_method).
 
-![FluidView screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/fluidview.png)
+![FluidView screenshot](images/fluidview.png)
 
 ### HazeDyn
 
 Calculator for fluid flow functions and reverse calculator
 for finding lambda parameter based on function value.
 
-![HazeDyn direct functions screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/hazedyn_direct.png)
-![HazeDyn reverse functions screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/hazedyn_reverse.png)
+![HazeDyn direct functions screenshot](images/hazedyn_direct.png)
+![HazeDyn reverse functions screenshot](images/hazedyn_reverse.png)
 
 ### MediaWave
 
@@ -103,8 +104,8 @@ of limited length with various initial boundary conditions for the tube
 edges (e.g. closed, opened, with friction) as well as for pressure and velocity
 of a fluid.
 
-![MediaWave simulation screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/mediawave.png)
-![MediaWave settings screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/mediawave_settings.png)
+![MediaWave simulation screenshot](images/mediawave.png)
+![MediaWave settings screenshot](images/mediawave_settings.png)
 
 ### SimplexView
 
@@ -122,12 +123,11 @@ methods are supported with graphical demonstration for each of them:
 Left mouse click on the 2D plot sets the new starting point for optimization
 method for the next scan.
 
-![SimplexView screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/simplexview.png)
+![SimplexView screenshot](images/simplexview.png)
 
 ### WaveView
 
 Graphical demonstration of fluid mechanics problem of a fluid in
 rectangular channel of infinite length.
 
-![WaveView screenshot](https://github.com/Postrediori/MechanicsPrograms/blob/master/images/waveview.png)
-
+![WaveView screenshot](images/waveview.png)

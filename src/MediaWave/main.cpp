@@ -112,7 +112,7 @@ public:
 };
 
 HazeModel::HazeModel(float l, int n)
- : L(l), N(n),
+ : N(n), L(l),
    x(NULL), x2(NULL),
    u1(NULL), u2(NULL), p1(NULL), p2(NULL),
    U(NULL), P(NULL) {
@@ -260,10 +260,11 @@ float HazeModel::un(float x) {
 	case 4: return un4(x);
 	case 5: return un5(x);
 	case 6: return un6(x);
+    default: return un_lin(x);
 	}
 }
 
-float HazeModel::un_lin(float x) {
+float HazeModel::un_lin(float /*x*/) {
     return UN_0;
 }
 
@@ -304,10 +305,11 @@ float HazeModel::pn(float x) {
 	case 2: return pn2(x);
 	case 3: return pn3(x);
 	case 4: return pn4(x);
+    default: return pn_lin(x);
 	}
 }
 
-float HazeModel::pn_lin(float x) {
+float HazeModel::pn_lin(float /*x*/) {
     return PN_0;
 }
 
@@ -560,7 +562,7 @@ void PlotWidget::draw_axis() {
         glBegin(GL_LINES);
         glVertex2f(yaxis_, xmin_);
         glVertex2f(yaxis_, xmax_);
-        glEnd;
+        glEnd();
     }
 }
 
@@ -818,9 +820,7 @@ void MainWindow::redraw() {
 }
 
 void MainWindow::helper(SettingsHelper h) {
-    int v;
 	void *side;
-    static char str[30];
 
     helper_ = h;
 

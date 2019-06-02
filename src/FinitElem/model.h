@@ -4,27 +4,27 @@
 
 static const int MODEL_DIMENSIONS = 2;
 
-typedef struct {
+struct NODE {
     int node;
     float x, y;
-} NODE;
+};
 
-typedef struct {
+struct FIX {
     int node;
     int axis;
     // int fx, fy;
-} FIX;
+};
 
-typedef struct {
+struct LOAD {
     int node;
     float px, py;
-} LOAD;
+};
 
-typedef struct {
+struct ELEM {
     int nodes[MODEL_DIMENSIONS];
     float length;
     float sina, cosa;
-} ELEM;
+};
 
 class FinitModel {
 public:

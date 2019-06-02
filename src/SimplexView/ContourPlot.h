@@ -25,9 +25,9 @@ public:
     virtual ~ContourPlot() { release(); }
 
     virtual bool init(
-        const float *points, int cols, int rows,
-        float xmin, float ymin, float xmax, float ymax,
-        float threshold
+        const float * /*points*/, int /*cols*/, int /*rows*/,
+        float /*xmin*/, float /*ymin*/, float /*xmax*/, float /*ymax*/,
+        float /*threshold*/
     ) { return true; }
     virtual void render() { }
 

@@ -19,7 +19,7 @@ namespace HazeFunc {
 	void lambdaPhi(double phi, double &l1, double &l2,
 				 double epsilon, unsigned int MaxIter);
 	double lambdaY(double y, double epsilon, unsigned int MaxIter);
-};
+}
 
 #define HAZEFUNC_H
 #endif

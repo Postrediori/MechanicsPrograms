@@ -290,12 +290,12 @@ int main(int argc, char **argv) {
     btnCalc->callback(calcFunc);
 
     window->end();
-    window->show();
+    window->show(argc, argv);
 
     return Fl::run();
 }
 
-void calcFunc(Fl_Widget *w, void *o) {
+void calcFunc(Fl_Widget * /*w*/, void * /*o*/) {
     char text[32];
     strcpy(text, inpq->value());
     double q = atof(text);
@@ -318,4 +318,3 @@ void calcFunc(Fl_Widget *w, void *o) {
     graph->set_lines(q, l1, l2);
     graph->redraw();
 }
-

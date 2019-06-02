@@ -62,9 +62,11 @@ static const GLfloat ColorTicks[]      = {0.0f, 0.0f, 0.0f};
 
 GraphWidget::GraphWidget(int X, int Y, int W, int H,
                          SearchEngine *engine, const char* l)
- : Fl_Gl_Window(X, Y, W, H, l), engine_(engine),
-   ticksX_(NULL), ticksY_(NULL), boundingBox_(NULL),
-    contourLines_(NULL), contourFills_(NULL) {
+ : Fl_Gl_Window(X, Y, W, H, l),
+   contourLines_(NULL), contourFills_(NULL),
+   boundingBox_(NULL),
+   ticksX_(NULL), ticksY_(NULL),
+   engine_(engine) {
 
     contourLines_ = new ContourPlot*[PlotLevels];
     for (int i=0; i<PlotLevels; i++)

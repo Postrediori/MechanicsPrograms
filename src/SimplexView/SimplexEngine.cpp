@@ -24,7 +24,7 @@ SimplexEngine::SimplexEngine() {
 
 void SimplexEngine::draw() {
     glColor4fv(SimplexHistoryColor);
-    for (int i=0; i<history_.size(); i++)
+    for (size_t i=0; i<history_.size(); i++)
         DrawSimplex(history_[i]);
 
     glColor4fv(SimplexColor);

@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
     model_widget = new ModelWidget(2, 32, 700-4, 500-34, &model);
 
     window.end();
-    window.show();
+    window.show(argc, argv);
     int res = Fl::run();
 
     // delete report_dlg;

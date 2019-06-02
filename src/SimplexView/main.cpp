@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
     search_engines.end();
 
     window.end();
-    window.show();
+    window.show(argc, argv);
     return Fl::run();
 }
 

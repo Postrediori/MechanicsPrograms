@@ -85,7 +85,7 @@ void CreateHalf(std::vector<vec2>& lines, int type,
 }
 
 void CreateAmbiguity(std::vector<vec2>& lines, int flags,
-                   float x, float y, float sx, float sy, float vals[], float v,
+                   float x, float y, float sx, float sy, float vals[], float /*v*/,
                    bool u) {
     float x1, y1;
     float x2, y2;
@@ -310,7 +310,7 @@ void CreateFilledHalf(std::vector<vec2>& triangles, int type,
 
 void CreateFilledAmbiguity(std::vector<vec2>& triangles, int type,
                        float x, float y, float sx, float sy, float vals[],
-                       float v, bool u) {
+                       float /*v*/, bool u) {
     float x1, y1;
     float x2, y2;
     float x3, y3;

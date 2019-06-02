@@ -10,7 +10,7 @@
 #include "model.h"
 
 FinitModel::FinitModel() :
-        node_count(0), component_count(0), nodes(NULL),
+        component_count(0), node_count(0), nodes(NULL),
         fixed_count(0), fixed(NULL),
         load_count(0), loads(NULL),
         elem_count(0), elems(NULL),
@@ -71,7 +71,6 @@ void FinitModel::clear() {
 }
 
 void FinitModel::load_from_file(const char* name) {
-    int i, j, m;
     char line[MAXSTRLEN];
 
     /*
@@ -88,7 +87,7 @@ void FinitModel::load_from_file(const char* name) {
             sscanf(line, "NODES %d\n", &node_count);
             component_count = node_count * MODEL_DIMENSIONS;
             nodes = (NODE *) malloc(sizeof(NODE)*node_count);
-            for (i=0; i<node_count; i++) {
+            for (int i=0; i<node_count; i++) {
                 NODE n;
                 read_string(in, line);
                 sscanf(line, "%d %f %f", &n.node, &n.x, &n.y);
@@ -99,7 +98,7 @@ void FinitModel::load_from_file(const char* name) {
             // Load node fixtures
             sscanf(line, "FIXED %d\n", &fixed_count);
             fixed = (FIX *) malloc(sizeof(FIX)*fixed_count);
-            for (i=0; i<fixed_count; i++) {
+            for (int i=0; i<fixed_count; i++) {
                 FIX f;
                 read_string(in, line);
                 sscanf(line, "%d %d", &f.node, &f.axis);
@@ -110,7 +109,7 @@ void FinitModel::load_from_file(const char* name) {
             // Load node loads
             sscanf(line, "LOADS %d\n", &load_count);
             loads = (LOAD *) malloc(sizeof(LOAD)*load_count);
-            for (i=0; i<load_count; i++) {
+            for (int i=0; i<load_count; i++) {
                 LOAD l;
                 read_string(in, line);
                 sscanf(line, "%d %f %f", &l.node, &l.px, &l.py);
@@ -121,7 +120,7 @@ void FinitModel::load_from_file(const char* name) {
             // Load elements
             sscanf(line, "ELEMENTS %d\n", &elem_count);
             elems = (ELEM *) malloc(sizeof(ELEM)*elem_count);
-            for (i=0; i<elem_count; i++) {
+            for (int i=0; i<elem_count; i++) {
                 ELEM e;
                 read_string(in, line);
                 sscanf(line, "%d %d", &e.nodes[0], &e.nodes[1]);
@@ -151,22 +150,21 @@ void FinitModel::load_from_file(const char* name) {
 }
 
 void FinitModel::prepare_solve() {
-    int i, j, m;
-
+    // Create vectors
     b = create_vector(component_count);
     a = create_matrix(component_count);
     u = create_vector(component_count);
     n = create_vector(elem_count);
 
     // Fill B matrix
-    for (i=0; i<load_count; i++) {
+    for (int i=0; i<load_count; i++) {
         LOAD l = loads[i];
         b[l.node*2-2] = l.px;
         b[l.node*2-1] = l.py;
     }
 
     // Fill A matrix
-    for (i=0; i<elem_count; i++) {
+    for (int i=0; i<elem_count; i++) {
         ELEM e = elems[i];
         NODE n1 = nodes[e.nodes[0]-1], n2 = nodes[e.nodes[1]-1];
         float sina = e.sina, cosa = e.cosa, length = e.length;
@@ -184,25 +182,25 @@ void FinitModel::prepare_solve() {
         K[0][1] = K[1][0] = cosa * sina / length;
         K[1][1] = sina * sina / length;
 
-        for (j=0; j<2; j++) {
-            for (m=0; m<2; m++) {
+        for (int j=0; j<2; j++) {
+            for (int m=0; m<2; m++) {
                 K[j+2][m+2] = K[j][m];
                 K[j+2][m] = K[j][m+2] = -K[j][m];
             }
         }
 
         // Copy values from K to A matrix according to global coords
-        for (j=0; j<4; j++) {
-            for (m=0; m<4; m++) {
+        for (int j=0; j<4; j++) {
+            for (int m=0; m<4; m++) {
                 a[GlobalIndeces[j]-1][GlobalIndeces[m]-1] += K[j][m];
             }
         }
     }
 
-    for (i=0; i<fixed_count; i++) {
+    for (int i=0; i<fixed_count; i++) {
         FIX f = fixed[i];
         int node = (f.node - 1) * 2 + 1 - (f.axis % 2);
-        for (j=0; j<component_count; j++) {
+        for (int j=0; j<component_count; j++) {
             a[node][j] = 0.0;
             a[j][node] = 0.0;
         }

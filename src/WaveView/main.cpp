@@ -16,10 +16,10 @@
 /*****************************************************************************
  * WaveModel
  *****************************************************************************/
-typedef struct {
+struct Point {
     double x, z;
     double x0, z0;
-} Point;
+};
 
 static double surface_func_linear(double x, double delta, double epsilon) {
     return epsilon*(x/delta-0.5);
@@ -546,27 +546,27 @@ void WaveWindow::get_inputs() {
     }
 }
 
-void WaveWindow::restart_cb(Fl_Widget *w, void *v) {
+void WaveWindow::restart_cb(Fl_Widget * /*w*/, void *v) {
     WaveWindow *wnd = reinterpret_cast<WaveWindow *>(v);
     wnd->get_inputs();
     wnd->model.reset();
     wnd->ww->redraw();
 }
 
-void WaveWindow::step_cb(Fl_Widget *w, void *v) {
+void WaveWindow::step_cb(Fl_Widget * /*w*/, void *v) {
     WaveWindow *wnd = reinterpret_cast<WaveWindow *>(v);
     wnd->model.step();
     wnd->ww->redraw();
 }
 
-void WaveWindow::timer_cb(void *v) {
+void WaveWindow::timer_cb(void * v) {
     WaveWindow *wnd = reinterpret_cast<WaveWindow *>(v);
     wnd->model.step();
     wnd->ww->redraw();
     Fl::repeat_timeout(TimerInterval, timer_cb, v);
 }
 
-void WaveWindow::start_cb(Fl_Widget *w, void *v) {
+void WaveWindow::start_cb(Fl_Widget * /*w*/, void *v) {
     WaveWindow *wnd = reinterpret_cast<WaveWindow *>(v);
     if (wnd->animating) return;
     wnd->animating = true;
@@ -579,7 +579,7 @@ void WaveWindow::start_cb(Fl_Widget *w, void *v) {
     Fl::add_timeout(TimerInterval, timer_cb, v);
 }
 
-void WaveWindow::stop_cb(Fl_Widget *w, void *v) {
+void WaveWindow::stop_cb(Fl_Widget * /*w*/, void *v) {
     WaveWindow *wnd = reinterpret_cast<WaveWindow *>(v);
     if (!wnd->animating) return;
     wnd->animating = false;

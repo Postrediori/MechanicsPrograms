@@ -5,11 +5,10 @@ macro(make_project_)
 
     project(${PROJECT})
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++11 -Wno-missing-field-initializers")
-
-    if(MSVC)
-        add_definitions(
-            -D_USE_MATH_DEFINES)
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++11 -Wno-missing-field-initializers")
+    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+        add_definitions(-D_USE_MATH_DEFINES)
     endif()
 
     if (NOT DEFINED HEADERS)
@@ -27,18 +26,21 @@ endmacro()
 macro(make_executable)
     make_project_()
     add_executable(${PROJECT} ${HEADERS} ${SOURCES})
-endmacro()
-
-macro(make_fltk_executable)
-    make_project_()
-    add_executable(${PROJECT} ${HEADERS} ${SOURCES})
-    target_link_libraries(${PROJECT}
-        ${OPENGL_LIBRARIES}
-        ${FLTK_BASE_LIBRARY}
-        ${FLTK_GL_LIBRARY})
-    include_directories(
-        ${OPENGL_INCLUDE_DIR}
-        ${FLTK_INCLUDE_DIR})
+    
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/bundle/${PROJECT}")
+    install(
+        TARGETS ${PROJECT}
+        DESTINATION ${CMAKE_INSTALL_PREFIX})
+    if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data")
+        install(
+            DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data"
+            DESTINATION ${CMAKE_INSTALL_PREFIX})
+    endif()
+    if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/models")
+        install(
+            DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/models"
+            DESTINATION ${CMAKE_INSTALL_PREFIX})
+    endif()
 endmacro()
 
 function(add_all_subdirectories)

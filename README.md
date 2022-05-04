@@ -44,8 +44,10 @@ sudo dnf groupinstall -y \
 sudo dnf install -y \
     gcc-c++ \
     cmake \
+    fltk \
     fltk-devel \
     fltk-fluid \
+    armadillo \
     armadillo-devel
 ```
 

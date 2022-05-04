@@ -1,12 +1,12 @@
 
-#include <Fl/Fl.H>
-#include <Fl/Fl_Window.H>
-#include <Fl/Fl_Input.H>
-#include <Fl/Fl_Output.H>
-#include <Fl/Fl_Button.H>
-#include <Fl/Fl_Tabs.H>
-#include <Fl/Fl_Group.H>
-#include <Fl/Fl_Choice.H>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_Input.H>
+#include <FL/Fl_Output.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Tabs.H>
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Choice.H>
 
 #include <cstdio>
 #include <cstring>

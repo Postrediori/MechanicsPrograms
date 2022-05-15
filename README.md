@@ -11,6 +11,7 @@ with gcc-5 and Microsoft Visual Studio Express 2008 and 2012.
 
 * [CMake](https://cmake.org/) - Build system.
 * [FLTK](http://www.fltk.org) - Minimalistic cross-platform GUI toolkit with OpenGL capabilities.
+* [Armadillo](http://arma.sourceforge.net) - Linear algebra library (for FEMSolve)
 
 ## Environment Setup
 

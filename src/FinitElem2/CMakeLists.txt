@@ -1,6 +1,6 @@
 make_executable()
 
-include_directories(
+target_include_directories(${PROJECT} PUBLIC
     ${ARMADILLO_INCLUDE_DIRS}
     )
 
@@ -10,5 +10,5 @@ target_link_libraries(${PROJECT}
 
 # Data files
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/data/model.txt
-    ${CMAKE_CURRENT_BINARY_DIR}/data/model.txt @ONLY)
+    ${CMAKE_SOURCE_DIR}/models/model.txt
+    ${CMAKE_CURRENT_BINARY_DIR}/models/model.txt COPYONLY)

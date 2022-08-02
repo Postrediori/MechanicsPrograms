@@ -6,7 +6,7 @@ target_link_libraries(${PROJECT}
     ${FLTK_GL_LIBRARY}
     )
 
-include_directories(
+target_include_directories(${PROJECT} PUBLIC
     ${OPENGL_INCLUDE_DIR}
     ${FLTK_INCLUDE_DIR}
     )

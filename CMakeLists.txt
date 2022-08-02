@@ -1,5 +1,7 @@
-project(MechanicsPrograms)
-cmake_minimum_required(VERSION 2.8)
+project(MechanicsPrograms LANGUAGES C CXX)
+cmake_minimum_required(VERSION 3.11)
+
+set(CMAKE_CXX_STANDARD 17)
 
 # 3rd party
 include(cmake/3rdparty.cmake)

@@ -178,19 +178,16 @@ void WaveWidget::draw_heatmap() {
                 ((model_->h + p0.z) * scalez) + YMin, 0.0);
         }
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-        for (int i = 0; i < model_->xn - 1; i++) {
+        fl_begin_polygon();
+        for (int i = 0; i < model_->xn; i++) {
             const auto& p0 = model_->points[i * model_->zn + j];
-            const auto& p1 = model_->points[i * model_->zn + j + 1];
-            const auto& p2 = model_->points[(i + 1) * model_->zn + j + 1];
-            const auto& p3 = model_->points[(i + 1) * model_->zn + j];
-
-            fl_polygon(
-                get_x(p0.x * scalex + XMin), get_y((model_->h + p0.z) * scalez + YMin),
-                get_x(p1.x * scalex + XMin), get_y((model_->h + p1.z) * scalez + YMin),
-                get_x(p2.x * scalex + XMin), get_y((model_->h + p2.z) * scalez + YMin),
-                get_x(p3.x * scalex + XMin), get_y((model_->h + p3.z) * scalez + YMin)
-            );
-    }
+            fl_vertex(get_x(p0.x * scalex + XMin), get_y((model_->h + p0.z) * scalez + YMin));
+        }
+        for (int i = model_->xn-1; i >= 0; i--) {
+            const auto& p0 = model_->points[i * model_->zn + j + 1];
+            fl_vertex(get_x(p0.x * scalex + XMin), get_y((model_->h + p0.z) * scalez + YMin));
+        }
+        fl_end_polygon();
 #endif
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
@@ -216,12 +213,15 @@ void WaveWidget::draw_box() {
     fl_color(fl_rgb_color(BoxColor[0], BoxColor[1], BoxColor[2]));
 
     fl_line_style(FL_SOLID, 2);
-    fl_loop(
+    fl_line(
         get_x(XMax), get_y(YMax),
+        get_x(XMax), get_y(YMin));
+    fl_line(
         get_x(XMax), get_y(YMin),
+        get_x(XMin), get_y(YMin));
+    fl_line(
         get_x(XMin), get_y(YMin),
-        get_x(XMin), get_y(YMax)
-    );
+        get_x(XMin), get_y(YMax));
 #endif
 }
 
@@ -279,15 +279,13 @@ void WaveWidget::draw_model() {
     fl_line_style(FL_SOLID, 1);
 
     for (int j = 0; j < model_->zn; j++) {
-        for (int i = 0; i < model_->xn - 1; i++) {
+        fl_begin_line();
+        for (int i = 0; i < model_->xn; i++) {
             const auto& p0 = model_->points[i * model_->zn + j];
-            const auto& p1 = model_->points[(i + 1) * model_->zn + j];
 
-            fl_line(
-                get_x(p0.x * scalex + XMin), get_y((model_->h + p0.z) * scalez + YMin),
-                get_x(p1.x * scalex + XMin), get_y((model_->h + p1.z) * scalez + YMin)
-            );
+            fl_vertex(get_x(p0.x * scalex + XMin), get_y((model_->h + p0.z) * scalez + YMin));
         }
+        fl_end_line();
     }
 #endif
 

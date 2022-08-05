@@ -3,43 +3,43 @@
 /*
  * Settings
  */
-#define SIDE_LEFT  (void *)1
-#define SIDE_RIGHT (void *)2
-
-#define SIDE_CLOSE  (void *)1
-#define SIDE_OPEN   (void *)2
-#define SIDE_MANUAL (void *)3
+enum class SideType : int {
+    Closed = 1,
+    Open = 2,
+    Manual = 3
+};
 
 struct SettingsHelper {
-    float L;
-    int N;
+    float L{ 0.0f };
+    int N{ 0 };
 
-    float a;
-    float rho;
-    float sigma;
+    float a{ 0.0f };
+    float rho{ 0.0f };
+    float sigma{ 0.0f };
 
-    int un_type;
-    int pn_type;
+    int un_type{ 0 };
+    int pn_type{ 0 };
 
-    void* left_side_type;
-    void* right_side_type;
+    SideType left_side_type{ SideType::Closed };
+    SideType right_side_type{ SideType::Closed };
 
-    float bl, cl;
-    float br, cr;
+    float bl{ 0.0f }, cl{ 0.0f };
+    float br{ 0.0f }, cr{ 0.0f };
 };
 
 /*
  * Main Window
  */
-static const double TimerInterval = 0.01;
+const double TimerInterval = 0.01;
 
 class MainWindow : public Fl_Window {
+public:
+    MainWindow(MediumModel*);
+
+    void helper(SettingsHelper);
+    SettingsHelper helper();
+
 private:
-    MediumModel* model_;
-
-    PlotWidget* uw, * pw;
-    Fl_Button* step_btn, * start_btn, * stop_btn, * settings_btn;
-
     void redraw();
 
     static void step_cb_st(Fl_Widget*, void*);
@@ -57,21 +57,9 @@ private:
     static void timer_cb_st(void*);
     void timer_cb();
 
-    // Settings window properties
-    SettingsHelper helper_;
-    Fl_Window* settings_wnd;
-
-    Fl_Button* close_btn, * apply_btn;
-
-    Fl_Input* len_in, * n_in;
-    Fl_Input* a_in, * rho_in, * sigma_in;
-    Fl_Choice* u_choice, * p_choice;
-    Fl_Tree* left_side_choice, * right_side_choice;
-    Fl_Input* bl_in, * cl_in, * br_in, * cr_in;
-
     static void create_side_selector(Fl_Tree*);
     static void set_tree_icons(Fl_Tree*);
-    static void select_side_type(Fl_Tree*, void*);
+    static void select_side_type(Fl_Tree*, SideType);
     void create_settings_wnd();
 
     static void close_cb_st(Fl_Widget*, void*);
@@ -95,9 +83,25 @@ private:
     void set_rcond_inputs(SettingsHelper helper);
     void get_rcond_inputs(SettingsHelper& helper);
 
-public:
-    MainWindow(MediumModel*);
+private:
+    MediumModel *model_{ nullptr };
 
-    void helper(SettingsHelper);
-    SettingsHelper helper();
+    PlotWidget* uw{ nullptr };
+    PlotWidget* pw{ nullptr };
+    Fl_Button* step_btn{ nullptr };
+    Fl_Button* start_btn{ nullptr };
+    Fl_Button* stop_btn{ nullptr };
+    Fl_Button* settings_btn{ nullptr };
+
+    // Settings window properties
+    SettingsHelper helper_;
+    Fl_Window* settings_wnd{ nullptr };
+
+    Fl_Button* close_btn{ nullptr }, * apply_btn{ nullptr };
+
+    Fl_Input* len_in{ nullptr }, * n_in{ nullptr };
+    Fl_Input* a_in{ nullptr }, * rho_in{ nullptr }, * sigma_in{ nullptr };
+    Fl_Choice* u_choice{ nullptr }, * p_choice{ nullptr };
+    Fl_Tree* left_side_choice{ nullptr }, * right_side_choice{ nullptr };
+    Fl_Input* bl_in{ nullptr }, * cl_in{ nullptr }, * br_in{ nullptr }, * cr_in{ nullptr };
 };

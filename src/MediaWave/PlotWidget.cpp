@@ -2,19 +2,37 @@
 #include "MathUtils.h"
 #include "PlotWidget.h"
 
+static const std::vector<std::array<uint8_t, 4>> Palette = {
+    {0xa5, 0x00, 0x27, 0x00},
+    {0xd7, 0x30, 0x27, 0x00},
+    {0xf4, 0x6d, 0x43, 0x00},
+    {0xfd, 0xae, 0x61, 0x00},
+    {0xfe, 0xe0, 0x90, 0x00},
+    {0xff, 0xff, 0xbf, 0x00},
+    {0xe0, 0xf3, 0xf9, 0x00},
+    {0xab, 0xd9, 0xea, 0x00},
+    {0x74, 0xad, 0xd1, 0x00},
+    {0x45, 0x75, 0xb4, 0x00},
+    {0x31, 0x36, 0x95, 0x00},
+};
+
+
 PlotWidget::PlotWidget(int X, int Y, int W, int H, const char* lbl)
+#ifdef DRAW_OPENGL
     : Fl_Gl_Window(X, Y, W, H, lbl) {
-    tick_color[0] = 0.0; tick_color[1] = 0.0; tick_color[2] = 0.0;
-    axis_color[0] = 0.75; axis_color[1] = 0.75; axis_color[2] = 0.75;
-    plot_color[0] = 1.0; plot_color[1] = 0.0; plot_color[2] = 0.0;
-    text_color[0] = 0.25; text_color[1] = 0.25; text_color[2] = 0.25;
+#else
+    : Fl_Widget(X, Y, W, H, lbl) {
+#endif
+    tick_color = { 0.0f, 0.0f, 0.0f, 1.0f };
+    axis_color = { 0.75f, 0.75f, 0.75f, 1.0f };
+    plot_color = { 255, 0, 0, 255 };
+    text_color = { 0.25f, 0.25f, 0.25f, 1.0f };
 
     this->axis(DefXAxis, DefYAxis);
     this->view_range(DefXMin, DefXMax, DefYMin, DefYMax);
     this->margin(DefMargin);
     this->ticks(DefTickCount, DefTickSize);
 }
-
 
 void PlotWidget::pixel_scale() {
     pixel_x = (xmax_ - xmin_) / (this->w() - margin_ * 2 - tick_size_);
@@ -77,13 +95,22 @@ void PlotWidget::margin(int m) {
     this->margin_ = m;
 }
 
-const int ALIGN_TOP = 0x01;
-const int ALIGN_MIDDLE = 0x02;
-const int ALIGN_BOTTOM = 0x04;
-const int ALIGN_LEFT = 0x10;
-const int ALIGN_CENTER = 0x20;
-const int ALIGN_RIGHT = 0x40;
-void PlotWidget::print_text(void* font, float x, float y, unsigned char align, const char* fmt, ...) {
+#ifdef DRAW_OPENGL
+namespace Align {
+    const uint8_t None = 0x00;
+
+    const uint8_t Top = 0x01;
+    const uint8_t Middle = 0x02;
+    const uint8_t Bottom = 0x04;
+
+    const uint8_t Left = 0x10;
+    const uint8_t Center = 0x20;
+    const uint8_t Right = 0x40;
+
+    const uint8_t Default = Align::Right | Align::Top;
+}
+
+void PlotWidget::print_text(void* font, float x, float y, uint8_t align, const char* fmt, ...) {
     char text[256];
     va_list ap;
 
@@ -109,20 +136,22 @@ void PlotWidget::print_text(void* font, float x, float y, unsigned char align, c
     tw = w * pixel_x;
     th = h * pixel_y;
 
-    if (align == 0) align = ALIGN_RIGHT | ALIGN_TOP;
+    if (align == Align::None) align = Align::Default;
 
-    if (align & ALIGN_LEFT) tx -= tw;
-    else if (align & ALIGN_CENTER) tx -= tw / 2;
+    if (align & Align::Left) tx -= tw;
+    else if (align & Align::Center) tx -= tw / 2;
 
-    if (align & ALIGN_BOTTOM) ty -= th;
-    else if (align & ALIGN_MIDDLE) ty -= th / 2;
+    if (align & Align::Bottom) ty -= th;
+    else if (align & Align::Middle) ty -= th / 2;
 
     glRasterPos2d(tx, ty);
     glutBitmapString(font, (const unsigned char*)text);
 }
+#endif
 
 void PlotWidget::draw_box() {
-    glColor3fv(tick_color);
+#ifdef DRAW_OPENGL
+    glColor4fv(tick_color.data());
 
     glBegin(GL_LINE_LOOP);
     glVertex2f(xmin_, ymin_);
@@ -130,117 +159,174 @@ void PlotWidget::draw_box() {
     glVertex2f(xmax_, ymax_);
     glVertex2f(xmin_, ymax_);
     glEnd();
+#else
+    fl_color(fl_rgb_color(tick_color[0], tick_color[1], tick_color[2]));
+
+    fl_loop(
+        get_x(xmin_), get_y(ymin_),
+        get_x(xmax_), get_y(ymin_),
+        get_x(xmax_), get_y(ymax_),
+        get_x(xmin_), get_y(ymax_));
+#endif
 }
 
 void PlotWidget::draw_ticks() {
-    glColor3fv(tick_color);
-
+#ifdef DRAW_OPENGL
+    glColor4fv(tick_color.data());
     glBegin(GL_LINES);
+#else
+    fl_color(fl_rgb_color(tick_color[0], tick_color[1], tick_color[2]));
+#endif
+
     if (ticks_x.size() > 0) {
         for (int i = 0; i <= tick_count_; i++) {
+#ifdef DRAW_OPENGL
             glVertex2f(ticks_x[i * 2].x, ticks_x[i * 2].y);
             glVertex2f(ticks_x[i * 2 + 1].x, ticks_x[i * 2 + 1].y);
+#else
+            fl_line(get_x(ticks_x[i * 2].x), get_y(ticks_x[i * 2].y),
+                get_x(ticks_x[i * 2 + 1].x), get_y(ticks_x[i * 2 + 1].y));
+#endif
         }
     }
 
     if (ticks_x.size() > 0) {
         for (int i = 0; i <= tick_count_; i++) {
+#ifdef DRAW_OPENGL
             glVertex2f(ticks_y[i * 2].x, ticks_y[i * 2].y);
             glVertex2f(ticks_y[i * 2 + 1].x, ticks_y[i * 2 + 1].y);
+#else
+            fl_line(get_x(ticks_y[i * 2].x), get_y(ticks_y[i * 2].y),
+                get_x(ticks_y[i * 2+1].x), get_y(ticks_y[i * 2+1].y));
+#endif
         }
     }
+
+#ifdef DRAW_OPENGL
     glEnd();
+#endif
 }
 
 void PlotWidget::draw_axis() {
-    glColor3fv(axis_color);
+#ifdef DRAW_OPENGL
+    glColor4fv(axis_color.data());
+#else
+    fl_color(fl_rgb_color(axis_color[0], axis_color[1], axis_color[2]));
+#endif
 
     // X axis
     if (betweenf(ymin_, xaxis_, ymax_)) {
+#ifdef DRAW_OPENGL
         glBegin(GL_LINES);
         glVertex2f(xmin_, xaxis_);
         glVertex2f(xmax_, xaxis_);
         glEnd();
+#else
+        fl_line(get_x(xmin_), get_y(xaxis_),
+            get_x(xmax_), get_y(xaxis_));
+#endif
     }
 
     // Y axis
-    if (betweenf(xmin_, yaxis_, xmax_)) {
+    if (betweenf(ymin_, yaxis_, ymax_)) {
+#ifdef DRAW_OPENGL
         glBegin(GL_LINES);
-        glVertex2f(yaxis_, xmin_);
-        glVertex2f(yaxis_, xmax_);
+        glVertex2f(xmin_, yaxis_);
+        glVertex2f(xmax_, yaxis_);
         glEnd();
+#else
+        fl_line(get_x(xmin_), get_y(yaxis_),
+            get_x(xmax_), get_y(yaxis_));
+#endif
     }
 }
 
 void PlotWidget::draw_heatmap() {
-    static const size_t PaletteSize = 11;
-    static const GLubyte Palette[PaletteSize][4] = {
-        {0xa5, 0x00, 0x27, 0x00},
-        {0xd7, 0x30, 0x27, 0x00},
-        {0xf4, 0x6d, 0x43, 0x00},
-        {0xfd, 0xae, 0x61, 0x00},
-        {0xfe, 0xe0, 0x90, 0x00},
-        {0xff, 0xff, 0xbf, 0x00},
-        {0xe0, 0xf3, 0xf9, 0x00},
-        {0xab, 0xd9, 0xea, 0x00},
-        {0x74, 0xad, 0xd1, 0x00},
-        {0x45, 0x75, 0xb4, 0x00},
-        {0x31, 0x36, 0x95, 0x00},
-    };
-
+#ifdef DRAW_OPENGL
     glBegin(GL_QUADS);
+#endif
     if (points.size() > 0) {
         for (int i = 0; i < point_count_; i++) {
             double y = points[i * 2].y;
             double t = 1. - (y - ymin_) / (ymax_ - ymin_);
-            size_t k = static_cast<size_t>((static_cast<double>(PaletteSize) * t)) % PaletteSize;
-            glColor4ubv(Palette[k]);
+            size_t k = static_cast<size_t>((static_cast<double>(Palette.size()) * t)) % Palette.size();
+
+#ifdef DRAW_OPENGL
+            glColor4ubv(Palette[k].data());
 
             glVertex2f(points[i * 2].x, ymin_);
             glVertex2f(points[i * 2 + 1].x, ymin_);
             glVertex2f(points[i * 2 + 1].x, ymax_);
             glVertex2f(points[i * 2].x, ymax_);
+#else
+            fl_color(fl_rgb_color(Palette[k][0], Palette[k][1], Palette[k][2]));
+
+            fl_polygon(
+                get_x(points[i * 2].x), get_y(ymin_),
+                get_x(points[i * 2 + 1].x), get_y(ymin_),
+                get_x(points[i * 2 + 1].x), get_y(ymax_),
+                get_x(points[i * 2].x), get_y(ymax_)
+            );
+#endif
         }
     }
-    glEnd();
 
+#ifdef DRAW_OPENGL
+    glEnd();
+#endif
 }
 
 void PlotWidget::draw_plot() {
-    glColor3fv(plot_color);
+#ifdef DRAW_OPENGL
+    glColor4ubv(plot_color.data());
     glBegin(GL_LINES);
+#else
+    fl_color(fl_rgb_color(plot_color[0], plot_color[1], plot_color[2]));
+#endif
+
     if (points.size() > 0) {
         for (int i = 0; i < point_count_; i++) {
+#ifdef DRAW_OPENGL
             glVertex2f(points[i * 2].x, points[i * 2].y);
             glVertex2f(points[i * 2 + 1].x, points[i * 2 + 1].y);
+#else
+            fl_line(get_x(points[i * 2].x), get_y(points[i * 2].y),
+                get_x(points[i * 2+1].x), get_y(points[i * 2+1].y));
+#endif
         }
     }
+
+#ifdef DRAW_OPENGL
     glEnd();
+#endif
 }
 
 #define LEGEND_FONT GLUT_BITMAP_HELVETICA_10
 void PlotWidget::draw_legend() {
-    glColor3fv(text_color);
+#ifdef DRAW_OPENGL
+    glColor4fv(text_color.data());
 
     print_text(LEGEND_FONT, (xmax_ - xmin_) / 2.0, ymax_ + margin_ * pixel_y / 2.0,
-        ALIGN_CENTER | ALIGN_MIDDLE, this->label());
+        Align::Center | Align::Middle, this->label());
 
     print_text(LEGEND_FONT, -tick_size_ * pixel_x, 0.0,
-        ALIGN_LEFT | ALIGN_MIDDLE, "%.1f", 0.0);
+        Align::Left | Align::Middle, "%.1f", 0.0);
 
     print_text(LEGEND_FONT, xmin_ - tick_size_ * pixel_x, ymin_,
-        ALIGN_LEFT | ALIGN_MIDDLE, "%.1f", ymin_);
+        Align::Left | Align::Middle, "%.1f", ymin_);
 
     print_text(LEGEND_FONT, xmin_ - tick_size_ * pixel_x, ymax_,
-        ALIGN_LEFT | ALIGN_MIDDLE, "%.1f", ymax_);
+        Align::Left | Align::Middle, "%.1f", ymax_);
 
     print_text(LEGEND_FONT, xmin_, ymin_ - tick_size_ * pixel_y,
-        ALIGN_CENTER | ALIGN_BOTTOM, "%.1f", xmin_);
+        Align::Center | Align::Bottom, "%.1f", xmin_);
     print_text(LEGEND_FONT, xmax_, ymin_ - tick_size_ * pixel_y,
-        ALIGN_CENTER | ALIGN_BOTTOM, "%.1f", xmax_);
+        Align::Center | Align::Bottom, "%.1f", xmax_);
+#endif
 }
 
 void PlotWidget::draw() {
+#ifdef DRAW_OPENGL
     if (!this->valid()) {
         pixel_scale();
         glViewport(0, 0, this->w(), this->h());
@@ -253,7 +339,9 @@ void PlotWidget::draw() {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
     }
+#endif
 
+#ifdef DRAW_OPENGL
     if (!this->context_valid()) {
         glShadeModel(GL_SMOOTH);
         glClearColor(1.0, 1.0, 1.0, 0.5);
@@ -261,23 +349,43 @@ void PlotWidget::draw() {
         glDisable(GL_DEPTH_TEST);
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     }
+#endif
 
+#ifdef DRAW_OPENGL
     glClear(GL_COLOR_BUFFER_BIT);
     glLoadIdentity();
+#else
+    if (damage() & FL_DAMAGE_ALL) {
+        fl_draw_box(FL_FLAT_BOX,
+            this->x(), this->y(),
+            this->w(), this->h(),
+            fl_rgb_color(255));
+    }
+#endif
+
+#ifndef DRAW_OPENGL
+    if (damage() & (FL_DAMAGE_ALL | 1)) {
+#endif
 
     draw_heatmap();
 
     // Draw ticks and bounding box
-    this->draw_box();
-    this->draw_ticks();
+    draw_box();
+    draw_ticks();
 
-    this->draw_axis();
+    draw_axis();
 
-    this->draw_legend();
+    draw_legend();
 
-    this->draw_plot();
+    draw_plot();
 
+#ifndef DRAW_OPENGL
+    }
+#endif
+
+#ifdef DRAW_OPENGL
     glFinish();
+#endif
 }
 
 void PlotWidget::plot(int count, const std::vector<float>& x, const std::vector<float>& y) {

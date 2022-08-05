@@ -17,8 +17,8 @@ int main (int argc, char *argv[]) {
     MediumModel model(DefL, DefN);
     // model.Reset();
 
-    MainWindow window(&model);
-    window.show(argc, argv);
+    auto window = new MainWindow(&model);
+    window->show(argc, argv);
 
     return Fl::run();
 }

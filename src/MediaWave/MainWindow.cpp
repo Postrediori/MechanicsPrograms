@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "pixmaps.h"
 #include "PlotWidget.h"
 #include "MediumModel.h"
@@ -44,8 +44,8 @@ MainWindow::MainWindow(MediumModel* model)
     helper_.sigma = DefSigma;
     helper_.un_type = DefUNType;
     helper_.pn_type = DefPNType;
-    helper_.left_side_type = SIDE_CLOSE;
-    helper_.right_side_type = SIDE_CLOSE;
+    helper_.left_side_type = SideType::Closed;
+    helper_.right_side_type = SideType::Closed;
     helper_.bl = 1.0;
     helper_.cl = 0.0;
     helper_.br = 1.0;
@@ -58,13 +58,16 @@ void MainWindow::redraw() {
     uw->plot(model_->N, model_->x, model_->u1);
     pw->plot(model_->N, model_->x, model_->p1);
 
+#ifdef DRAW_OPENGL
     uw->redraw();
     pw->redraw();
+#else
+    uw->damage(1);
+    pw->damage(1);
+#endif
 }
 
 void MainWindow::helper(SettingsHelper h) {
-    void* side;
-
     helper_ = h;
 
     model_->L = helper_.L;
@@ -76,23 +79,31 @@ void MainWindow::helper(SettingsHelper h) {
 
     model_->InitFunc(helper_.un_type, helper_.pn_type);
 
-    side = helper_.left_side_type;
-    if (side == SIDE_CLOSE) model_->InitCondL(INIT_COND_CLOSED);
-    else if (side == SIDE_OPEN)  model_->InitCondL(INIT_COND_OPENED);
-    else if (side == SIDE_MANUAL) model_->InitCondL(helper_.bl, helper_.cl);
+    switch (helper_.left_side_type) {
+    case SideType::Closed: model_->InitCondL(INIT_COND_CLOSED); break;
+    case SideType::Open: model_->InitCondL(INIT_COND_OPENED); break;
+    case SideType::Manual: model_->InitCondL(helper_.bl, helper_.cl); break;
+    }
 
-    side = helper_.right_side_type;
-    if (side == SIDE_CLOSE) model_->InitCondR(INIT_COND_CLOSED);
-    else if (side == SIDE_OPEN)  model_->InitCondR(INIT_COND_OPENED);
-    else if (side == SIDE_MANUAL) model_->InitCondR(helper_.br, helper_.cr);
+    switch (helper_.right_side_type) {
+    case SideType::Closed: model_->InitCondR(INIT_COND_CLOSED); break;
+    case SideType::Open: model_->InitCondR(INIT_COND_OPENED); break;
+    case SideType::Manual: model_->InitCondL(helper_.br, helper_.cr); break;
+    }
 
     uw->view_range(0.0, model_->L, -2.0, 2.0);
     uw->ticks(DefTickCount, DefTickSize);
-    uw->invalidate();
 
     pw->view_range(0.0, model_->L, -2.0, 2.0);
     pw->ticks(DefTickCount, DefTickSize);
-    pw->invalidate();
+
+#ifdef DRAW_OPENGL
+    uw->redraw();
+    pw->redraw();
+#else
+    uw->damage(1);
+    pw->damage(1);
+#endif
 
     this->model_->Reset();
     this->redraw();
@@ -197,9 +208,9 @@ void MainWindow::set_tree_icons(Fl_Tree* t) {
     }
 }
 
-void MainWindow::select_side_type(Fl_Tree* t, void* type) {
+void MainWindow::select_side_type(Fl_Tree* t, SideType type) {
     for (Fl_Tree_Item* item = t->first(); item; item = item->next()) {
-        if (item->user_data() == type) {
+        if (item->user_data() == (void*)(type)) {
             t->select_only(item);
             return;
         }
@@ -236,9 +247,9 @@ void MainWindow::create_settings_wnd() {
     left_side_choice = new Fl_Tree(90, 200, 52, 116, "Left");
     create_side_selector(left_side_choice);
     left_side_choice->clear();
-    left_side_choice->add(label_close_left)->user_data(SIDE_CLOSE);
-    left_side_choice->add(label_open)->user_data(SIDE_OPEN);
-    left_side_choice->add(label_manual)->user_data(SIDE_MANUAL);
+    left_side_choice->add(label_close_left)->user_data((void*)(SideType::Closed));
+    left_side_choice->add(label_open)->user_data((void*)(SideType::Open));
+    left_side_choice->add(label_manual)->user_data((void*)(SideType::Manual));
     set_tree_icons(left_side_choice);
     left_side_choice->callback(left_side_cb_st, this);
     bl_in = new Fl_Input(70, 330, 90, 25, "bl");
@@ -247,9 +258,9 @@ void MainWindow::create_settings_wnd() {
     right_side_choice = new Fl_Tree(210, 200, 52, 116, "Right");
     create_side_selector(right_side_choice);
     right_side_choice->clear();
-    right_side_choice->add(label_close_right)->user_data(SIDE_CLOSE);
-    right_side_choice->add(label_open)->user_data(SIDE_OPEN);
-    right_side_choice->add(label_manual)->user_data(SIDE_MANUAL);
+    right_side_choice->add(label_close_right)->user_data((void*)(SideType::Closed));
+    right_side_choice->add(label_open)->user_data((void*)(SideType::Open));
+    right_side_choice->add(label_manual)->user_data((void*)(SideType::Manual));
     set_tree_icons(right_side_choice);
     right_side_choice->callback(right_side_cb_st, this);
     br_in = new Fl_Input(190, 330, 90, 25, "br");
@@ -330,9 +341,9 @@ void MainWindow::set_lcond_inputs(SettingsHelper helper) {
 void MainWindow::get_lcond_inputs(SettingsHelper& helper) {
     static char str[30];
     Fl_Tree_Item* item = left_side_choice->first_selected_item();
-    helper.left_side_type = item->user_data();
+    helper.left_side_type = static_cast<SideType>((int)(item->user_data()));
 
-    if (helper.left_side_type == SIDE_MANUAL) {
+    if (helper.left_side_type == SideType::Manual) {
         strcpy(str, bl_in->value());
         helper.bl = atof(str);
 
@@ -340,12 +351,12 @@ void MainWindow::get_lcond_inputs(SettingsHelper& helper) {
         helper.cl = atof(str);
 
     }
-    else if (helper.left_side_type == SIDE_CLOSE) {
+    else if (helper.left_side_type == SideType::Closed) {
         helper.cl = 0.0;
         helper.bl = 1.0;
 
     }
-    else if (helper.left_side_type == SIDE_OPEN) {
+    else if (helper.left_side_type == SideType::Open) {
         helper.cl = 0.0;
         helper.bl = 1.0;
     }
@@ -365,9 +376,9 @@ void MainWindow::set_rcond_inputs(SettingsHelper helper) {
 void MainWindow::get_rcond_inputs(SettingsHelper& helper) {
     static char str[30];
     Fl_Tree_Item* item = right_side_choice->first_selected_item();
-    helper.right_side_type = item->user_data();
+    helper.right_side_type = static_cast<SideType>((int)(item->user_data()));
 
-    if (helper.right_side_type == SIDE_MANUAL) {
+    if (helper.right_side_type == SideType::Manual) {
         strcpy(str, br_in->value());
         helper.br = atof(str);
 
@@ -375,12 +386,12 @@ void MainWindow::get_rcond_inputs(SettingsHelper& helper) {
         helper.cr = atof(str);
 
     }
-    else if (helper.right_side_type == SIDE_CLOSE) {
+    else if (helper.right_side_type == SideType::Closed) {
         helper.cr = 0.0;
         helper.br = 1.0;
 
     }
-    else if (helper.right_side_type == SIDE_OPEN) {
+    else if (helper.right_side_type == SideType::Open) {
         helper.cr = 0.0;
         helper.br = 1.0;
     }
@@ -413,9 +424,9 @@ void MainWindow::left_side_cb_st(Fl_Widget*, void* v) {
 void MainWindow::left_side_cb() {
     Fl_Tree_Item* item = left_side_choice->callback_item();
     Fl_Tree_Reason reason = left_side_choice->callback_reason();
-    void* v = item->user_data();
+    SideType v = static_cast<SideType>((int)(item->user_data()));
 
-    if (v == SIDE_MANUAL && reason == FL_TREE_REASON_SELECTED) {
+    if (v == SideType::Manual && reason == FL_TREE_REASON_SELECTED) {
         bl_in->show();
         cl_in->show();
     }
@@ -433,9 +444,9 @@ void MainWindow::right_side_cb_st(Fl_Widget*, void* v) {
 void MainWindow::right_side_cb() {
     Fl_Tree_Item* item = right_side_choice->callback_item();
     Fl_Tree_Reason reason = right_side_choice->callback_reason();
-    void* v = item->user_data();
+    SideType v = static_cast<SideType>((int)(item->user_data()));
 
-    if (v == SIDE_MANUAL && reason == FL_TREE_REASON_SELECTED) {
+    if (v == SideType::Manual && reason == FL_TREE_REASON_SELECTED) {
         br_in->show();
         cr_in->show();
     }

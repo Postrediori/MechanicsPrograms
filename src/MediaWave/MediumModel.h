@@ -22,8 +22,17 @@ const float UN_1 = 1.0;
 const float PN_0 = 0.0;
 const float PN_1 = 1.0;
 
-class MediumModel {
-public:
+struct MediumModel {
+    MediumModel(float, int);
+
+    void Init();
+    void Reset();
+    void Step();
+
+    void InitFunc(int, int);
+    void InitCondL(float, float);
+    void InitCondR(float, float);
+
     int N;
     float L;
     float sigma, a;
@@ -58,15 +67,4 @@ public:
     std::vector<float> x, x2;
     std::vector<float> u1, u2, p1, p2;
     std::vector<float> U, P;
-
-public:
-    MediumModel(float, int);
-
-    void Init();
-    void Reset();
-    void Step();
-
-    void InitFunc(int, int);
-    void InitCondL(float, float);
-    void InitCondR(float, float);
 };

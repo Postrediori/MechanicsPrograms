@@ -3,6 +3,7 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
+#include <FL/x.H>
 #include <FL/gl.h>
 #include <FL/glu.h>
 #include <FL/glut.H>

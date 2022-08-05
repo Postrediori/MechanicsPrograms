@@ -23,15 +23,24 @@ PlotWidget::PlotWidget(int X, int Y, int W, int H, const char* lbl)
 #else
     : Fl_Widget(X, Y, W, H, lbl) {
 #endif
-    tick_color = { 0.0f, 0.0f, 0.0f, 1.0f };
-    axis_color = { 0.75f, 0.75f, 0.75f, 1.0f };
+    tick_color = { 0, 0, 0, 255 };
+    axis_color = { 192, 192, 192, 255 };
     plot_color = { 255, 0, 0, 255 };
-    text_color = { 0.25f, 0.25f, 0.25f, 1.0f };
+    text_color = { 64, 64, 64, 255 };
 
-    this->axis(DefXAxis, DefYAxis);
-    this->view_range(DefXMin, DefXMax, DefYMin, DefYMax);
-    this->margin(DefMargin);
-    this->ticks(DefTickCount, DefTickSize);
+    this->axis(PlotDefaults::XAxis, PlotDefaults::YAxis);
+    this->view_range(PlotDefaults::XMin, PlotDefaults::XMax, PlotDefaults::YMin, PlotDefaults::YMax);
+    this->margin(PlotDefaults::Margin);
+    this->ticks(PlotDefaults::TickCount, PlotDefaults::TickSize);
+}
+
+PlotWidget::~PlotWidget() {
+#ifndef DRAW_OPENGL
+    if (initOffscreen_) {
+        initOffscreen_ = false;
+        fl_delete_offscreen(offscreen_);
+    }
+#endif
 }
 
 void PlotWidget::pixel_scale() {
@@ -95,30 +104,22 @@ void PlotWidget::margin(int m) {
     this->margin_ = m;
 }
 
-#ifdef DRAW_OPENGL
-namespace Align {
-    const uint8_t None = 0x00;
 
-    const uint8_t Top = 0x01;
-    const uint8_t Middle = 0x02;
-    const uint8_t Bottom = 0x04;
-
-    const uint8_t Left = 0x10;
-    const uint8_t Center = 0x20;
-    const uint8_t Right = 0x40;
-
-    const uint8_t Default = Align::Right | Align::Top;
-}
-
-void PlotWidget::print_text(void* font, float x, float y, uint8_t align, const char* fmt, ...) {
-    char text[256];
+void PlotWidget::print_text(float x, float y, uint8_t align, const char* fmt, ...) {
+    const size_t BufferLen = 256;
+    char text[BufferLen] = { 0 };
     va_list ap;
 
-    if (fmt == NULL) return;
+    if (!fmt) {
+        return;
+    }
 
     va_start(ap, fmt);
-    vsnprintf(text, 256, fmt, ap);
+    vsnprintf(text, BufferLen-1, fmt, ap);
     va_end(ap);
+
+#ifdef DRAW_OPENGL
+    void* font = GLUT_BITMAP_HELVETICA_10;
 
     int w, h;
     h = glutBitmapHeight(font);
@@ -136,22 +137,45 @@ void PlotWidget::print_text(void* font, float x, float y, uint8_t align, const c
     tw = w * pixel_x;
     th = h * pixel_y;
 
-    if (align == Align::None) align = Align::Default;
+    if (align == TextAlign::None) align = TextAlign::Default;
 
-    if (align & Align::Left) tx -= tw;
-    else if (align & Align::Center) tx -= tw / 2;
+    if (align & TextAlign::Left) tx -= tw;
+    else if (align & TextAlign::Center) tx -= tw / 2;
 
-    if (align & Align::Bottom) ty -= th;
-    else if (align & Align::Middle) ty -= th / 2;
+    if (align & TextAlign::Bottom) ty -= th;
+    else if (align & TextAlign::Middle) ty -= th / 2;
 
     glRasterPos2d(tx, ty);
     glutBitmapString(font, (const unsigned char*)text);
-}
+#else
+    fl_font(FL_HELVETICA, 10);
+
+    int w{ 0 }, h{ 0 };
+    fl_measure(text, w, h);
+
+    float x0{ get_x(x) }, y0{ get_y(y) };
+
+    if (align & TextAlign::Left) {
+        x0 -= w;
+    }
+    else if (align & TextAlign::Center) {
+        x0 -= w / 2;
+    }
+
+    if (align & TextAlign::Bottom) {
+        y0 += h;
+    }
+    else if (align & TextAlign::Middle) {
+        y0 += h / 2;
+    }
+
+    fl_draw(text, x0, y0);
 #endif
+}
 
 void PlotWidget::draw_box() {
 #ifdef DRAW_OPENGL
-    glColor4fv(tick_color.data());
+    glColor4ubv(tick_color.data());
 
     glBegin(GL_LINE_LOOP);
     glVertex2f(xmin_, ymin_);
@@ -172,7 +196,7 @@ void PlotWidget::draw_box() {
 
 void PlotWidget::draw_ticks() {
 #ifdef DRAW_OPENGL
-    glColor4fv(tick_color.data());
+    glColor4ubv(tick_color.data());
     glBegin(GL_LINES);
 #else
     fl_color(fl_rgb_color(tick_color[0], tick_color[1], tick_color[2]));
@@ -209,7 +233,7 @@ void PlotWidget::draw_ticks() {
 
 void PlotWidget::draw_axis() {
 #ifdef DRAW_OPENGL
-    glColor4fv(axis_color.data());
+    glColor4ubv(axis_color.data());
 #else
     fl_color(fl_rgb_color(axis_color[0], axis_color[1], axis_color[2]));
 #endif
@@ -301,28 +325,29 @@ void PlotWidget::draw_plot() {
 #endif
 }
 
-#define LEGEND_FONT GLUT_BITMAP_HELVETICA_10
 void PlotWidget::draw_legend() {
 #ifdef DRAW_OPENGL
-    glColor4fv(text_color.data());
-
-    print_text(LEGEND_FONT, (xmax_ - xmin_) / 2.0, ymax_ + margin_ * pixel_y / 2.0,
-        Align::Center | Align::Middle, this->label());
-
-    print_text(LEGEND_FONT, -tick_size_ * pixel_x, 0.0,
-        Align::Left | Align::Middle, "%.1f", 0.0);
-
-    print_text(LEGEND_FONT, xmin_ - tick_size_ * pixel_x, ymin_,
-        Align::Left | Align::Middle, "%.1f", ymin_);
-
-    print_text(LEGEND_FONT, xmin_ - tick_size_ * pixel_x, ymax_,
-        Align::Left | Align::Middle, "%.1f", ymax_);
-
-    print_text(LEGEND_FONT, xmin_, ymin_ - tick_size_ * pixel_y,
-        Align::Center | Align::Bottom, "%.1f", xmin_);
-    print_text(LEGEND_FONT, xmax_, ymin_ - tick_size_ * pixel_y,
-        Align::Center | Align::Bottom, "%.1f", xmax_);
+    glColor4ubv(text_color.data());
+#else
+    fl_color(fl_rgb_color(text_color[0], text_color[1], text_color[2]));
 #endif
+
+    print_text((xmax_ - xmin_) / 2.0, ymax_ + margin_ * pixel_y / 2.0,
+        TextAlign::Center | TextAlign::Middle, this->label());
+
+    print_text(-tick_size_ * pixel_x, 0.0,
+        TextAlign::Left | TextAlign::Middle, "%.1f", 0.0);
+
+    print_text(xmin_ - tick_size_ * pixel_x, ymin_,
+        TextAlign::Left | TextAlign::Middle, "%.1f", ymin_);
+
+    print_text(xmin_ - tick_size_ * pixel_x, ymax_,
+        TextAlign::Left | TextAlign::Middle, "%.1f", ymax_);
+
+    print_text(xmin_, ymin_ - tick_size_ * pixel_y,
+        TextAlign::Center | TextAlign::Bottom, "%.1f", xmin_);
+    print_text(xmax_, ymin_ - tick_size_ * pixel_y,
+        TextAlign::Center | TextAlign::Bottom, "%.1f", xmax_);
 }
 
 void PlotWidget::draw() {
@@ -349,22 +374,21 @@ void PlotWidget::draw() {
         glDisable(GL_DEPTH_TEST);
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     }
+#else
+    if (!initOffscreen_) {
+        initOffscreen_ = true;
+        offscreen_ = fl_create_offscreen(this->w(), this->h());
+    }
 #endif
 
 #ifdef DRAW_OPENGL
     glClear(GL_COLOR_BUFFER_BIT);
     glLoadIdentity();
 #else
-    if (damage() & FL_DAMAGE_ALL) {
-        fl_draw_box(FL_FLAT_BOX,
-            this->x(), this->y(),
-            this->w(), this->h(),
-            fl_rgb_color(255));
-    }
-#endif
+    fl_begin_offscreen(offscreen_);
 
-#ifndef DRAW_OPENGL
-    if (damage() & (FL_DAMAGE_ALL | 1)) {
+    fl_color(fl_rgb_color(255));
+    fl_rectf(0, 0, this->w(), this->h());
 #endif
 
     draw_heatmap();
@@ -379,13 +403,22 @@ void PlotWidget::draw() {
 
     draw_plot();
 
-#ifndef DRAW_OPENGL
-    }
-#endif
-
 #ifdef DRAW_OPENGL
     glFinish();
+#else
+    fl_end_offscreen();
+
+    fl_copy_offscreen(this->x(), this->y(), this->w(), this->h(),
+        offscreen_, 0, 0);
 #endif
+}
+
+float PlotWidget::get_x(float x) const {
+    return (x - xmin_) / pixel_x + margin_ + tick_size_ /*+ this->x()*/;
+}
+
+float PlotWidget::get_y(float y) const {
+    return (ymax_ - y) / pixel_y + margin_ /*+ this->y()*/;
 }
 
 void PlotWidget::plot(int count, const std::vector<float>& x, const std::vector<float>& y) {

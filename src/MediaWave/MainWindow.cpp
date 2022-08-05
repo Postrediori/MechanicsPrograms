@@ -29,10 +29,10 @@ MainWindow::MainWindow(MediumModel* model)
     stop_btn->deactivate();
 
     uw->view_range(0.0, DefL, -2.0, 2.0);
-    uw->ticks(DefTickCount, DefTickSize);
+    uw->ticks(PlotDefaults::TickCount, PlotDefaults::TickSize);
 
     pw->view_range(0.0, DefL, -2.0, 2.0);
-    pw->ticks(DefTickCount, DefTickSize);
+    pw->ticks(PlotDefaults::TickCount, PlotDefaults::TickSize);
 
     uw->plot(DefN, model->x, model->u1);
     pw->plot(DefN, model->x, model->p1);
@@ -58,13 +58,8 @@ void MainWindow::redraw() {
     uw->plot(model_->N, model_->x, model_->u1);
     pw->plot(model_->N, model_->x, model_->p1);
 
-#ifdef DRAW_OPENGL
     uw->redraw();
     pw->redraw();
-#else
-    uw->damage(1);
-    pw->damage(1);
-#endif
 }
 
 void MainWindow::helper(SettingsHelper h) {
@@ -92,18 +87,13 @@ void MainWindow::helper(SettingsHelper h) {
     }
 
     uw->view_range(0.0, model_->L, -2.0, 2.0);
-    uw->ticks(DefTickCount, DefTickSize);
+    uw->ticks(PlotDefaults::TickCount, PlotDefaults::TickSize);
 
     pw->view_range(0.0, model_->L, -2.0, 2.0);
-    pw->ticks(DefTickCount, DefTickSize);
+    pw->ticks(PlotDefaults::TickCount, PlotDefaults::TickSize);
 
-#ifdef DRAW_OPENGL
     uw->redraw();
     pw->redraw();
-#else
-    uw->damage(1);
-    pw->damage(1);
-#endif
 
     this->model_->Reset();
     this->redraw();

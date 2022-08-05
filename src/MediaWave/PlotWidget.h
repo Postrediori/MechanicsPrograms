@@ -1,22 +1,34 @@
 #pragma once
 
-#define DRAW_OPENGL
+// #define DRAW_OPENGL
 
-struct Point2D {
-    float x, y;
-};
+namespace PlotDefaults {
+    const float XMin = -1.0;
+    const float XMax = 1.0;
+    const float YMin = -1.0;
+    const float YMax = 1.0;
 
-const float DefXMin = -1.0;
-const float DefXMax = 1.0;
-const float DefYMin = -1.0;
-const float DefYMax = 1.0;
+    const float XAxis = 0.0;
+    const float YAxis = 0.0;
 
-const float DefXAxis = 0.0;
-const float DefYAxis = 0.0;
+    const int Margin = 25;
+    const int TickSize = 10;
+    const int TickCount = 20;
+}
 
-const int DefMargin = 25;
-const int DefTickSize = 10;
-const int DefTickCount = 20;
+namespace TextAlign {
+    const uint8_t None = 0x00;
+
+    const uint8_t Top = 0x01;
+    const uint8_t Middle = 0x02;
+    const uint8_t Bottom = 0x04;
+
+    const uint8_t Left = 0x10;
+    const uint8_t Center = 0x20;
+    const uint8_t Right = 0x40;
+
+    const uint8_t Default = TextAlign::Right | TextAlign::Top;
+}
 
 #ifdef DRAW_OPENGL
 class PlotWidget : public Fl_Gl_Window {
@@ -24,7 +36,12 @@ class PlotWidget : public Fl_Gl_Window {
 class PlotWidget : public Fl_Widget {
 #endif
 public:
+    struct Point2D {
+        float x, y;
+    };
+
     PlotWidget(int X, int Y, int W, int H, const char* lbl = nullptr);
+    ~PlotWidget();
 
     void view_range(float, float, float, float);
     void ticks(int, int);
@@ -42,17 +59,10 @@ private:
 
     void draw() override;
 
-    float get_x(float x) const {
-        return (x - xmin_) / pixel_x + margin_ + tick_size_ + this->x();
-    }
+    float get_x(float x) const;
+    float get_y(float y) const;
 
-    float get_y(float y) const {
-        return (ymax_ - y) / pixel_y + margin_ + this->y();
-    }
-
-#ifdef DRAW_OPENGL
-    void print_text(void*, float, float, uint8_t, const char*, ...);
-#endif
+    void print_text(float, float, uint8_t, const char*, ...);
 
     void axis(float, float);
     void margin(int);
@@ -69,8 +79,13 @@ private:
     int point_count_;
     std::vector<Point2D> points;
 
-    std::array<float, 4> tick_color;
-    std::array<float, 4> axis_color;
+    std::array<uint8_t, 4> tick_color;
+    std::array<uint8_t, 4> axis_color;
     std::array<uint8_t, 4> plot_color;
-    std::array<float, 4> text_color;
+    std::array<uint8_t, 4> text_color;
+
+#ifndef DRAW_OPENGL
+    bool initOffscreen_{ false };
+    Fl_Offscreen offscreen_;
+#endif
 };

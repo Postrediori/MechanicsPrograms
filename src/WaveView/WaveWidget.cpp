@@ -361,8 +361,8 @@ void WaveWidget::draw_legend() {
     auto headerFont = GLUT_BITMAP_HELVETICA_18;
     auto textFont = GLUT_BITMAP_HELVETICA_12;
 #else
-    void* headerFont = (void*)(18);
-    void* textFont = (void*)(12);
+    auto headerFont = reinterpret_cast<void*>(18);
+    auto textFont = reinterpret_cast<void*>(12);
 #endif
 
     // Draw widget label
@@ -449,7 +449,7 @@ void WaveWidget::draw_text(void* font, double x, double y, uint8_t align, const 
     glRasterPos2d(tx, ty);
     glutBitmapString(font, (const unsigned char*)text);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_font(FL_HELVETICA, (int)(font));
+    fl_font(FL_HELVETICA, static_cast<int>(reinterpret_cast<uintptr_t>(font)));
 
     int w{ 0 }, h{ 0 };
     fl_measure(text, w, h);

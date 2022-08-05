@@ -331,7 +331,7 @@ void MainWindow::set_lcond_inputs(SettingsHelper helper) {
 void MainWindow::get_lcond_inputs(SettingsHelper& helper) {
     static char str[30];
     Fl_Tree_Item* item = left_side_choice->first_selected_item();
-    helper.left_side_type = static_cast<SideType>((int)(item->user_data()));
+    helper.left_side_type = static_cast<SideType>(reinterpret_cast<uintptr_t>(item->user_data()));
 
     if (helper.left_side_type == SideType::Manual) {
         strcpy(str, bl_in->value());
@@ -366,7 +366,7 @@ void MainWindow::set_rcond_inputs(SettingsHelper helper) {
 void MainWindow::get_rcond_inputs(SettingsHelper& helper) {
     static char str[30];
     Fl_Tree_Item* item = right_side_choice->first_selected_item();
-    helper.right_side_type = static_cast<SideType>((int)(item->user_data()));
+    helper.right_side_type = static_cast<SideType>(reinterpret_cast<uintptr_t>(item->user_data()));
 
     if (helper.right_side_type == SideType::Manual) {
         strcpy(str, br_in->value());
@@ -414,7 +414,7 @@ void MainWindow::left_side_cb_st(Fl_Widget*, void* v) {
 void MainWindow::left_side_cb() {
     Fl_Tree_Item* item = left_side_choice->callback_item();
     Fl_Tree_Reason reason = left_side_choice->callback_reason();
-    SideType v = static_cast<SideType>((int)(item->user_data()));
+    SideType v = static_cast<SideType>(reinterpret_cast<uintptr_t>(item->user_data()));
 
     if (v == SideType::Manual && reason == FL_TREE_REASON_SELECTED) {
         bl_in->show();
@@ -434,7 +434,7 @@ void MainWindow::right_side_cb_st(Fl_Widget*, void* v) {
 void MainWindow::right_side_cb() {
     Fl_Tree_Item* item = right_side_choice->callback_item();
     Fl_Tree_Reason reason = right_side_choice->callback_reason();
-    SideType v = static_cast<SideType>((int)(item->user_data()));
+    SideType v = static_cast<SideType>(reinterpret_cast<uintptr_t>(item->user_data()));
 
     if (v == SideType::Manual && reason == FL_TREE_REASON_SELECTED) {
         br_in->show();

@@ -104,7 +104,6 @@ void PlotWidget::margin(int m) {
     this->margin_ = m;
 }
 
-
 void PlotWidget::print_text(float x, float y, uint8_t align, const char* fmt, ...) {
     const size_t BufferLen = 256;
     char text[BufferLen] = { 0 };
@@ -414,11 +413,11 @@ void PlotWidget::draw() {
 }
 
 float PlotWidget::get_x(float x) const {
-    return (x - xmin_) / pixel_x + margin_ + tick_size_ /*+ this->x()*/;
+    return (x - xmin_) / pixel_x + margin_ + tick_size_;
 }
 
 float PlotWidget::get_y(float y) const {
-    return (ymax_ - y) / pixel_y + margin_ /*+ this->y()*/;
+    return (ymax_ - y) / pixel_y + margin_;
 }
 
 void PlotWidget::plot(int count, const std::vector<float>& x, const std::vector<float>& y) {

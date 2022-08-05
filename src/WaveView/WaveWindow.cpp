@@ -35,6 +35,8 @@ WaveWindow::WaveWindow(int W, int H, const char* l)
     stop_btn->callback(stop_cb, this);
     stop_btn->deactivate();
 
+    this->resizable(ww);
+
     this->end();
 }
 

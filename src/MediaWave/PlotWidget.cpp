@@ -43,6 +43,21 @@ PlotWidget::~PlotWidget() {
 #endif
 }
 
+void PlotWidget::resize(int x, int y, int w, int h) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    Fl_Gl_Window::resize(x, y, w, h);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    Fl_Widget::resize(x, y, w, h);
+
+    this->ticks(PlotDefaults::TickCount, PlotDefaults::TickSize);
+
+    if (initOffscreen_) {
+        fl_delete_offscreen(offscreen_);
+        offscreen_ = fl_create_offscreen(this->w(), this->h());
+    }
+#endif
+}
+
 void PlotWidget::pixel_scale() {
     pixel_x = (xmax_ - xmin_) / (this->w() - margin_ * 2 - tick_size_);
     pixel_y = (ymax_ - ymin_) / (this->h() - margin_ * 2 - tick_size_);
@@ -118,7 +133,7 @@ void PlotWidget::print_text(float x, float y, uint8_t align, const char* fmt, ..
     va_end(ap);
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    void* font = GLUT_BITMAP_HELVETICA_10;
+    void* font = GLUT_BITMAP_HELVETICA_12;
 
     int w, h;
     h = glutBitmapHeight(font);
@@ -147,7 +162,7 @@ void PlotWidget::print_text(float x, float y, uint8_t align, const char* fmt, ..
     glRasterPos2d(tx, ty);
     glutBitmapString(font, (const unsigned char*)text);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_font(FL_HELVETICA, 10);
+    fl_font(FL_HELVETICA, 14);
 
     int w{ 0 }, h{ 0 };
     fl_measure(text, w, h);
@@ -373,7 +388,8 @@ void PlotWidget::draw_legend() {
 void PlotWidget::draw() {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
     if (!this->valid()) {
-        pixel_scale();
+        this->ticks(PlotDefaults::TickCount, PlotDefaults::TickSize);
+
         glViewport(0, 0, this->w(), this->h());
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();

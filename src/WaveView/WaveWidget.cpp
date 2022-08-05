@@ -40,36 +40,8 @@ WaveWidget::WaveWidget(int X, int Y, int W, int H, WaveModel* model, const char*
     : Fl_Widget(X, Y, W, H, l),
 #endif
     model_(model) {
-    using namespace PlotDefaults;
 
-    pixelX_ = (XMax - XMin) / (this->w() - Margin * 2 - TickSize);
-    pixelY_ = (YMax - YMin) / (this->h() - Margin * 2 - TickSize);
-
-    // Y Ticks
-    ticksY.resize((TickCount + 1) * 2);
-    double dTick = (YMax - YMin) / TickCount;
-    for (int i = 0; i <= TickCount; i++) {
-        double y = YMin + i * dTick;
-        ticksY[i * 2].x = XMin;
-        ticksY[i * 2].y = y;
-
-        double tickScale = (i % 2) ? 0.5 : 1.0;
-        ticksY[i * 2 + 1].x = XMin - TickSize * pixelX_ * tickScale;
-        ticksY[i * 2 + 1].y = y;
-    }
-
-    // X Ticks
-    ticksX.resize((TickCount + 1) * 2);
-    dTick = (XMax - XMin) / TickCount;
-    for (int i = 0; i <= TickCount; i++) {
-        double x = XMin + i * dTick;
-        ticksX[i * 2].y = YMin;
-        ticksX[i * 2].x = x;
-
-        double tickScale = (i % 2) ? 0.5 : 1.0;
-        ticksX[i * 2 + 1].y = YMin - TickSize * pixelY_ * tickScale;
-        ticksX[i * 2 + 1].x = x;
-    }
+    update_size();
 }
 
 WaveWidget::~WaveWidget() {
@@ -81,13 +53,21 @@ WaveWidget::~WaveWidget() {
 #endif
 }
 
+void WaveWidget::resize(int x, int y, int w, int h) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    Fl_Gl_Window::resize(x, y, w, h);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    Fl_Widget::resize(x, y, w, h);
+#endif
+    update_size();
+}
+
 void WaveWidget::draw() {
     using namespace PlotDefaults;
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
     if (!this->valid()) {
-        pixelX_ = (XMax - XMin) / (this->w() - Margin * 2 - TickSize);
-        pixelY_ = (YMax - YMin) / (this->h() - Margin * 2 - TickSize);
+        update_size();
 
         glViewport(0, 0, this->w(), this->h());
         glMatrixMode(GL_PROJECTION);
@@ -326,24 +306,29 @@ void WaveWidget::draw_ticks() {
     glColor4ubv(TicksColor.data());
 
     glBegin(GL_LINES);
-    for (int i = 0; i <= TickCount; i++) {
+    for (int i = 0; i <= TickCountX; i++) {
         glVertex2d(ticksX[i * 2].x, ticksX[i * 2].y);
         glVertex2d(ticksX[i * 2 + 1].x, ticksX[i * 2 + 1].y);
+    }
 
+    for (int i = 0; i <= TickCountY; i++) {
         glVertex2d(ticksY[i * 2].x, ticksY[i * 2].y);
         glVertex2d(ticksY[i * 2 + 1].x, ticksY[i * 2 + 1].y);
     }
     glEnd();
+
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_color(fl_rgb_color(TicksColor[0], TicksColor[1], TicksColor[2]));
     fl_line_style(FL_SOLID, 1);
 
-    for (int i = 0; i <= TickCount; i++) {
+    for (int i = 0; i <= TickCountX; i++) {
         fl_line(
             get_x(ticksX[i * 2].x), get_y(ticksX[i * 2].y),
             get_x(ticksX[i * 2 + 1].x), get_y(ticksX[i * 2 + 1].y)
         );
+    }
 
+    for (int i = 0; i <= TickCountY; i++) {
         fl_line(
             get_x(ticksY[i * 2].x), get_y(ticksY[i * 2].y),
             get_x(ticksY[i * 2 + 1].x), get_y(ticksY[i * 2 + 1].y)
@@ -360,42 +345,42 @@ void WaveWidget::draw_legend() {
     auto textFont = GLUT_BITMAP_HELVETICA_12;
 #else
     auto headerFont = reinterpret_cast<void*>(18);
-    auto textFont = reinterpret_cast<void*>(12);
+    auto textFont = reinterpret_cast<void*>(14);
 #endif
 
     // Draw widget label
-    draw_text(headerFont, 0, YMax,
+    draw_text(headerFont, 0.0, YMax,
         TextAlign::Center | TextAlign::Top,
         "%s", this->label());
 
     // Draw model time
-    draw_text(headerFont, XMin, YMax,
-        TextAlign::Right | TextAlign::Top,
+    draw_text(headerFont, 0.0, YMin - TickSize * pixelY_,
+        TextAlign::Center | TextAlign::Bottom,
         "time : %.4f", model_->time);
 
     // Axes labels
     // X-Axis labels
-    draw_text(textFont, XMin, YMin,
-        TextAlign::Right | TextAlign::Bottom,
-        "%.1f", 0.0);
+    draw_text(textFont, XMin, YMin - TickSize * pixelY_,
+        TextAlign::Center | TextAlign::Bottom,
+        "%.2f", 0.0);
 
-    draw_text(textFont, XMax, YMin,
-        TextAlign::Left | TextAlign::Bottom,
-        "%.1f", model_->delta);
+    draw_text(textFont, XMax, YMin - TickSize * pixelY_,
+        TextAlign::Center | TextAlign::Bottom,
+        "%.2f", model_->delta);
 
     // Y-Axis labels
-    draw_text(textFont, XMin, YMax,
-        TextAlign::Left | TextAlign::Bottom,
-        "%.1f", YMax);
+    draw_text(textFont, XMin - TickSize * pixelX_, YMax,
+        TextAlign::Left | TextAlign::Top,
+        "%.2f", model_->h * YMax / abs(YMin));
 
     // Water level
-    draw_text(textFont, XMin, 0.0,
-        TextAlign::Left | TextAlign::Middle,
-        "%.1f", 0.0);
-
-    draw_text(textFont, XMin, YMin,
+    draw_text(textFont, XMin - TickSize * pixelX_, 0.0,
         TextAlign::Left | TextAlign::Top,
-        "%.1f", -model_->h);
+        "%.2f", 0.0);
+
+    draw_text(textFont, XMin - TickSize * pixelX_, YMin,
+        TextAlign::Left | TextAlign::Top,
+        "%.2f", -model_->h);
 }
 
 void WaveWidget::draw_text(void* font, double x, double y, uint8_t align, const char* fmt, ...) {
@@ -446,6 +431,7 @@ void WaveWidget::draw_text(void* font, double x, double y, uint8_t align, const 
 
     glRasterPos2d(tx, ty);
     glutBitmapString(font, (const unsigned char*)text);
+
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_font(FL_HELVETICA, static_cast<int>(reinterpret_cast<uintptr_t>(font)));
 
@@ -478,4 +464,44 @@ double WaveWidget::get_x(double x) const {
 
 double WaveWidget::get_y(double y) const {
     return (PlotDefaults::YMax - y) / pixelY_ + PlotDefaults::Margin;
+}
+
+void WaveWidget::update_size() {
+    using namespace PlotDefaults;
+
+    pixelX_ = (XMax - XMin) / (this->w() - Margin * 2 - TickSize);
+    pixelY_ = (YMax - YMin) / (this->h() - Margin * 2 - TickSize);
+
+    // Y Ticks
+    ticksY.resize((TickCountY + 1) * 2);
+    double dTick = (YMax - YMin) / TickCountY;
+    for (int i = 0; i <= TickCountY; i++) {
+        double y = YMin + i * dTick;
+        ticksY[i * 2].x = XMin;
+        ticksY[i * 2].y = y;
+
+        double tickScale = (i % 2) ? 0.5 : 1.0;
+        ticksY[i * 2 + 1].x = XMin - TickSize * pixelX_ * tickScale;
+        ticksY[i * 2 + 1].y = y;
+    }
+
+    // X Ticks
+    ticksX.resize((TickCountX + 1) * 2);
+    dTick = (XMax - XMin) / TickCountX;
+    for (int i = 0; i <= TickCountX; i++) {
+        double x = XMin + i * dTick;
+        ticksX[i * 2].y = YMin;
+        ticksX[i * 2].x = x;
+
+        double tickScale = (i % 2) ? 0.5 : 1.0;
+        ticksX[i * 2 + 1].y = YMin - TickSize * pixelY_ * tickScale;
+        ticksX[i * 2 + 1].x = x;
+    }
+
+#if DRAW_METHOD==DRAW_METHOD_FLTK
+    if (initOffscreen_) {
+        fl_delete_offscreen(offscreen_);
+        offscreen_ = fl_create_offscreen(this->w(), this->h());
+    }
+#endif
 }

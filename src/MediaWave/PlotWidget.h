@@ -2,7 +2,9 @@
 
 #define DRAW_METHOD_OPENGL 1
 #define DRAW_METHOD_FLTK 2
+#ifndef DRAW_METHOD
 #define DRAW_METHOD DRAW_METHOD_FLTK
+#endif
 
 namespace PlotDefaults {
     const float XMin = -1.0;
@@ -44,6 +46,8 @@ public:
 
     PlotWidget(int X, int Y, int W, int H, const char* lbl = nullptr);
     ~PlotWidget();
+
+    void resize(int x, int y, int w, int h) override;
 
     void view_range(float, float, float, float);
     void ticks(int, int);

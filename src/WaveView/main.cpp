@@ -9,7 +9,6 @@
  *****************************************************************************/
 int main (int argc, char* argv[]) {
     auto window = new WaveWindow(700, 500, "Wave Viewer");
-    window->resizable(window);
     window->show(argc, argv);
 
     return Fl::run();

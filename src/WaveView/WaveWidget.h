@@ -2,7 +2,9 @@
 
 #define DRAW_METHOD_OPENGL 1
 #define DRAW_METHOD_FLTK 2
+#ifndef DRAW_METHOD
 #define DRAW_METHOD DRAW_METHOD_FLTK
+#endif
 
 namespace PlotDefaults {
     static const double XMin = -1.0;
@@ -10,7 +12,8 @@ namespace PlotDefaults {
     static const double YMin = -1.0;
     static const double YMax = 0.5;
 
-    static const int TickCount = 20;
+    static const int TickCountX = 20;
+    static const int TickCountY = 18;
     static const int TickSize = 15;
     static const int Margin = 40;
 }
@@ -42,6 +45,8 @@ public:
     WaveWidget(int X, int Y, int W, int H, WaveModel* model = nullptr, const char* l = nullptr);
     ~WaveWidget();
 
+    void resize(int x, int y, int w, int h) override;
+
 private:
     void draw() override;
 
@@ -56,6 +61,8 @@ private:
 
     double get_x(double x) const;
     double get_y(double y) const;
+    
+    void update_size();
 
 private:
     WaveModel* model_{ nullptr };

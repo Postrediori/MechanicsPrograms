@@ -257,35 +257,6 @@ void WaveWidget::draw_model() {
     double scalex = (XMax - XMin) / model_->delta;
     double scalez = (/*YMax*/ -YMin) / model_->h;
 
-    // Points
-#if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(ModelPointsColor.data());
-    glPointSize(3.0);
-
-    glBegin(GL_POINTS);
-    for (int i = 0; i < model_->xn; i++) {
-        for (int j = 0; j < model_->zn; j++) {
-            const auto& p = model_->points[i * model_->zn + j];
-            glVertex3f(p.x * scalex + XMin,
-                ((model_->h + p.z) * scalez) + YMin, 0.0);
-        }
-    }
-    glEnd();
-#elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(ModelPointsColor[0], ModelPointsColor[1], ModelPointsColor[2]));
-
-    for (int i = 0; i < model_->xn; i++) {
-        for (int j = 0; j < model_->zn; j++) {
-            const auto& p = model_->points[i * model_->zn + j];
-            auto x = get_x(p.x * scalex + XMin);
-            auto y = get_y((model_->h + p.z) * scalez + YMin);
-
-            constexpr double PointSize = 4.0;
-            fl_rectf(x- PointSize/2, y- PointSize/2, PointSize, PointSize);
-        }
-    }
-#endif
-
     // Lines
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
     glColor4ubv(ModelLinesColor.data());
@@ -316,6 +287,35 @@ void WaveWidget::draw_model() {
                 get_x(p0.x * scalex + XMin), get_y((model_->h + p0.z) * scalez + YMin),
                 get_x(p1.x * scalex + XMin), get_y((model_->h + p1.z) * scalez + YMin)
             );
+        }
+    }
+#endif
+
+    // Points
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    glColor4ubv(ModelPointsColor.data());
+    glPointSize(3.0);
+
+    glBegin(GL_POINTS);
+    for (int i = 0; i < model_->xn; i++) {
+        for (int j = 0; j < model_->zn; j++) {
+            const auto& p = model_->points[i * model_->zn + j];
+            glVertex3f(p.x * scalex + XMin,
+                ((model_->h + p.z) * scalez) + YMin, 0.0);
+        }
+    }
+    glEnd();
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_color(fl_rgb_color(ModelPointsColor[0], ModelPointsColor[1], ModelPointsColor[2]));
+
+    for (int i = 0; i < model_->xn; i++) {
+        for (int j = 0; j < model_->zn; j++) {
+            const auto& p = model_->points[i * model_->zn + j];
+            auto x = get_x(p.x * scalex + XMin);
+            auto y = get_y((model_->h + p.z) * scalez + YMin);
+
+            constexpr double PointSize = 4.0;
+            fl_rectf(x - PointSize / 2, y - PointSize / 2, PointSize, PointSize);
         }
     }
 #endif

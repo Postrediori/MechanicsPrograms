@@ -1,6 +1,8 @@
 #pragma once
 
-// #define DRAW_OPENGL
+#define DRAW_METHOD_OPENGL 1
+#define DRAW_METHOD_FLTK 2
+#define DRAW_METHOD DRAW_METHOD_FLTK
 
 namespace PlotDefaults {
     const float XMin = -1.0;
@@ -30,9 +32,9 @@ namespace TextAlign {
     const uint8_t Default = TextAlign::Right | TextAlign::Top;
 }
 
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
 class PlotWidget : public Fl_Gl_Window {
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
 class PlotWidget : public Fl_Widget {
 #endif
 public:
@@ -84,7 +86,7 @@ private:
     std::array<uint8_t, 4> plot_color;
     std::array<uint8_t, 4> text_color;
 
-#ifndef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_FLTK
     bool initOffscreen_{ false };
     Fl_Offscreen offscreen_;
 #endif

@@ -18,9 +18,9 @@ static const std::vector<std::array<uint8_t, 4>> Palette = {
 
 
 PlotWidget::PlotWidget(int X, int Y, int W, int H, const char* lbl)
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     : Fl_Gl_Window(X, Y, W, H, lbl) {
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
     : Fl_Widget(X, Y, W, H, lbl) {
 #endif
     tick_color = { 0, 0, 0, 255 };
@@ -35,7 +35,7 @@ PlotWidget::PlotWidget(int X, int Y, int W, int H, const char* lbl)
 }
 
 PlotWidget::~PlotWidget() {
-#ifndef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_FLTK
     if (initOffscreen_) {
         initOffscreen_ = false;
         fl_delete_offscreen(offscreen_);
@@ -117,7 +117,7 @@ void PlotWidget::print_text(float x, float y, uint8_t align, const char* fmt, ..
     vsnprintf(text, BufferLen-1, fmt, ap);
     va_end(ap);
 
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     void* font = GLUT_BITMAP_HELVETICA_10;
 
     int w, h;
@@ -146,7 +146,7 @@ void PlotWidget::print_text(float x, float y, uint8_t align, const char* fmt, ..
 
     glRasterPos2d(tx, ty);
     glutBitmapString(font, (const unsigned char*)text);
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_font(FL_HELVETICA, 10);
 
     int w{ 0 }, h{ 0 };
@@ -173,7 +173,7 @@ void PlotWidget::print_text(float x, float y, uint8_t align, const char* fmt, ..
 }
 
 void PlotWidget::draw_box() {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glColor4ubv(tick_color.data());
 
     glBegin(GL_LINE_LOOP);
@@ -182,7 +182,7 @@ void PlotWidget::draw_box() {
     glVertex2f(xmax_, ymax_);
     glVertex2f(xmin_, ymax_);
     glEnd();
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_color(fl_rgb_color(tick_color[0], tick_color[1], tick_color[2]));
 
     fl_loop(
@@ -194,19 +194,19 @@ void PlotWidget::draw_box() {
 }
 
 void PlotWidget::draw_ticks() {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glColor4ubv(tick_color.data());
     glBegin(GL_LINES);
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_color(fl_rgb_color(tick_color[0], tick_color[1], tick_color[2]));
 #endif
 
     if (ticks_x.size() > 0) {
         for (int i = 0; i <= tick_count_; i++) {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
             glVertex2f(ticks_x[i * 2].x, ticks_x[i * 2].y);
             glVertex2f(ticks_x[i * 2 + 1].x, ticks_x[i * 2 + 1].y);
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
             fl_line(get_x(ticks_x[i * 2].x), get_y(ticks_x[i * 2].y),
                 get_x(ticks_x[i * 2 + 1].x), get_y(ticks_x[i * 2 + 1].y));
 #endif
@@ -215,36 +215,36 @@ void PlotWidget::draw_ticks() {
 
     if (ticks_x.size() > 0) {
         for (int i = 0; i <= tick_count_; i++) {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
             glVertex2f(ticks_y[i * 2].x, ticks_y[i * 2].y);
             glVertex2f(ticks_y[i * 2 + 1].x, ticks_y[i * 2 + 1].y);
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
             fl_line(get_x(ticks_y[i * 2].x), get_y(ticks_y[i * 2].y),
                 get_x(ticks_y[i * 2+1].x), get_y(ticks_y[i * 2+1].y));
 #endif
         }
     }
 
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glEnd();
 #endif
 }
 
 void PlotWidget::draw_axis() {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glColor4ubv(axis_color.data());
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_color(fl_rgb_color(axis_color[0], axis_color[1], axis_color[2]));
 #endif
 
     // X axis
     if (betweenf(ymin_, xaxis_, ymax_)) {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
         glBegin(GL_LINES);
         glVertex2f(xmin_, xaxis_);
         glVertex2f(xmax_, xaxis_);
         glEnd();
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
         fl_line(get_x(xmin_), get_y(xaxis_),
             get_x(xmax_), get_y(xaxis_));
 #endif
@@ -252,12 +252,12 @@ void PlotWidget::draw_axis() {
 
     // Y axis
     if (betweenf(ymin_, yaxis_, ymax_)) {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
         glBegin(GL_LINES);
         glVertex2f(xmin_, yaxis_);
         glVertex2f(xmax_, yaxis_);
         glEnd();
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
         fl_line(get_x(xmin_), get_y(yaxis_),
             get_x(xmax_), get_y(yaxis_));
 #endif
@@ -265,69 +265,91 @@ void PlotWidget::draw_axis() {
 }
 
 void PlotWidget::draw_heatmap() {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glBegin(GL_QUADS);
 #endif
     if (points.size() > 0) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
         for (int i = 0; i < point_count_; i++) {
             double y = points[i * 2].y;
             double t = 1. - (y - ymin_) / (ymax_ - ymin_);
             size_t k = static_cast<size_t>((static_cast<double>(Palette.size()) * t)) % Palette.size();
 
-#ifdef DRAW_OPENGL
             glColor4ubv(Palette[k].data());
 
             glVertex2f(points[i * 2].x, ymin_);
             glVertex2f(points[i * 2 + 1].x, ymin_);
             glVertex2f(points[i * 2 + 1].x, ymax_);
             glVertex2f(points[i * 2].x, ymax_);
-#else
-            fl_color(fl_rgb_color(Palette[k][0], Palette[k][1], Palette[k][2]));
-
-            fl_polygon(
-                get_x(points[i * 2].x), get_y(ymin_),
-                get_x(points[i * 2 + 1].x), get_y(ymin_),
-                get_x(points[i * 2 + 1].x), get_y(ymax_),
-                get_x(points[i * 2].x), get_y(ymax_)
-            );
-#endif
         }
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+        double tPrev{ 0.0 };
+        int j{ 0 };
+
+        for (int i = 0; i < point_count_; i++) {
+            double y = points[i * 2].y;
+            double t = 1. - (y - ymin_) / (ymax_ - ymin_);
+            if (i == 0) {
+                tPrev = t;
+                continue;
+            }
+
+            constexpr double Epsilon = 1e-3;
+            if ((abs(t - tPrev) > Epsilon) || (i == point_count_ - 1)) {
+                // Level changed, draw new part of heatmap
+
+                size_t k = static_cast<size_t>((static_cast<double>(Palette.size()) * t)) % Palette.size();
+                fl_color(fl_rgb_color(Palette[k][0], Palette[k][1], Palette[k][2]));
+                fl_polygon(
+                    get_x(points[j * 2].x), get_y(ymin_),
+                    get_x(points[i * 2 + 1].x), get_y(ymin_),
+                    get_x(points[i * 2 + 1].x), get_y(ymax_),
+                    get_x(points[j * 2].x), get_y(ymax_)
+                );
+
+                // Mark start of the next heatmap part
+                j = i;
+            }
+
+            tPrev = t;
+        }
+#endif
     }
 
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glEnd();
 #endif
 }
 
 void PlotWidget::draw_plot() {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glColor4ubv(plot_color.data());
     glBegin(GL_LINES);
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_color(fl_rgb_color(plot_color[0], plot_color[1], plot_color[2]));
 #endif
 
     if (points.size() > 0) {
         for (int i = 0; i < point_count_; i++) {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
             glVertex2f(points[i * 2].x, points[i * 2].y);
             glVertex2f(points[i * 2 + 1].x, points[i * 2 + 1].y);
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
             fl_line(get_x(points[i * 2].x), get_y(points[i * 2].y),
-                get_x(points[i * 2+1].x), get_y(points[i * 2+1].y));
+                get_x(points[i * 2 + 1].x), get_y(points[i * 2 + 1].y));
 #endif
         }
     }
 
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glEnd();
 #endif
 }
 
 void PlotWidget::draw_legend() {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glColor4ubv(text_color.data());
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_color(fl_rgb_color(text_color[0], text_color[1], text_color[2]));
 #endif
 
@@ -350,7 +372,7 @@ void PlotWidget::draw_legend() {
 }
 
 void PlotWidget::draw() {
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     if (!this->valid()) {
         pixel_scale();
         glViewport(0, 0, this->w(), this->h());
@@ -365,7 +387,7 @@ void PlotWidget::draw() {
     }
 #endif
 
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     if (!this->context_valid()) {
         glShadeModel(GL_SMOOTH);
         glClearColor(1.0, 1.0, 1.0, 0.5);
@@ -373,17 +395,17 @@ void PlotWidget::draw() {
         glDisable(GL_DEPTH_TEST);
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     }
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
     if (!initOffscreen_) {
         initOffscreen_ = true;
         offscreen_ = fl_create_offscreen(this->w(), this->h());
     }
 #endif
 
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glClear(GL_COLOR_BUFFER_BIT);
     glLoadIdentity();
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_begin_offscreen(offscreen_);
 
     fl_color(fl_rgb_color(255));
@@ -402,9 +424,9 @@ void PlotWidget::draw() {
 
     draw_plot();
 
-#ifdef DRAW_OPENGL
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glFinish();
-#else
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_end_offscreen();
 
     fl_copy_offscreen(this->x(), this->y(), this->w(), this->h(),

@@ -16,19 +16,23 @@ struct Gradient {
     ByteColor colorMin;
     ByteColor colorMax;
 
-    ByteColor GetColor(double x) const {
-        ByteColor color = { 255 };
-        for (size_t i = 0; i < 3; i++) {
-            color[i] = static_cast<uint8_t>(static_cast<double>(colorMin[i]) +
-                static_cast<double>(colorMax[i] - colorMin[i]) * x);
+    std::vector<ByteColor> GetGradient(int n) const {
+        std::vector<ByteColor> colors(n);
+        for (int i = 0; i < n; i++) {
+            ByteColor c;
+            double x = static_cast<double>(i) / (n - 1);
+            c[0] = static_cast<uint8_t>(colorMin[0] + (colorMax[0] - colorMin[0]) * x);
+            c[1] = static_cast<uint8_t>(colorMin[1] + (colorMax[1] - colorMin[1]) * x);
+            c[2] = static_cast<uint8_t>(colorMin[2] + (colorMax[2] - colorMin[2]) * x);
+            colors[i] = c;
         }
-        return color;
+        return colors;
     }
 };
 
 // Blue-white gradient
 // f7fbff - 08306b
-static const Gradient HeatmapGradient = {
+const Gradient HeatmapGradient = {
     { 0xf7, 0xfb, 0xff, 0xff },
     { 0x08, 0x30, 0x6b, 0xff }
 };
@@ -114,9 +118,7 @@ void WaveWidget::draw() {
     draw_ticks();
     draw_legend();
 
-#if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glFinish();
-#elif DRAW_METHOD==DRAW_METHOD_FLTK
+#if DRAW_METHOD==DRAW_METHOD_FLTK
     fl_end_offscreen();
 
     fl_copy_offscreen(this->x(), this->y(), this->w(), this->h(),
@@ -130,18 +132,18 @@ void WaveWidget::draw_heatmap() {
     if (!model_) {
         return;
     }
-    ByteColor layerColor;
 
     double scalex = (XMax - XMin) / model_->delta;
     double scalez = (/*YMax*/ -YMin) / model_->h;
+
+    auto heatmapColors = HeatmapGradient.GetGradient(model_->zn);
 
     for (int j = 0; j < model_->zn - 1; j++) {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
         glBegin(GL_TRIANGLE_STRIP);
 #endif
 
-        double depth = static_cast<double>(j) / static_cast<double>(model_->zn - 1);
-        layerColor = HeatmapGradient.GetColor(depth);
+        auto layerColor = heatmapColors[j];
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
         glColor4ubv(layerColor.data());
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
@@ -158,7 +160,7 @@ void WaveWidget::draw_heatmap() {
                 ((model_->h + p0.z) * scalez) + YMin, 0.0);
         }
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-        fl_begin_polygon();
+        fl_begin_complex_polygon();
         for (int i = 0; i < model_->xn; i++) {
             const auto& p0 = model_->points[i * model_->zn + j];
             fl_vertex(get_x(p0.x * scalex + XMin), get_y((model_->h + p0.z) * scalez + YMin));
@@ -167,7 +169,7 @@ void WaveWidget::draw_heatmap() {
             const auto& p0 = model_->points[i * model_->zn + j + 1];
             fl_vertex(get_x(p0.x * scalex + XMin), get_y((model_->h + p0.z) * scalez + YMin));
         }
-        fl_end_polygon();
+        fl_end_complex_polygon();
 #endif
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL

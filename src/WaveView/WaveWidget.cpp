@@ -411,7 +411,7 @@ void WaveWidget::draw_text(void* font, double x, double y, uint8_t align, const 
     float tw = w * pixelX_;
     float th = h * pixelY_;
 
-    if (align == TextAlign::None) {
+    if (align == TextAlign::Unspecified) {
         align = TextAlign::Default;
     }
 

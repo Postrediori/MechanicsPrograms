@@ -151,7 +151,7 @@ void PlotWidget::print_text(float x, float y, uint8_t align, const char* fmt, ..
     tw = w * pixel_x;
     th = h * pixel_y;
 
-    if (align == TextAlign::None) align = TextAlign::Default;
+    if (align == TextAlign::Unspecified) align = TextAlign::Default;
 
     if (align & TextAlign::Left) tx -= tw;
     else if (align & TextAlign::Center) tx -= tw / 2;

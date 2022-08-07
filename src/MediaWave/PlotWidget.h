@@ -21,7 +21,7 @@ namespace PlotDefaults {
 }
 
 namespace TextAlign {
-    const uint8_t None = 0x00;
+    const uint8_t Unspecified = 0x00;
 
     const uint8_t Top = 0x01;
     const uint8_t Middle = 0x02;

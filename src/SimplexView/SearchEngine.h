@@ -1,32 +1,29 @@
-// SearchEngine.h
-#ifndef SEARCH_ENGINE_H
-#define SEARCH_ENGINE_H
+#pragma once
 
 class SearchEngine {
-protected:
-    int count_;
-    bool search_over_;
-    double xmin_, ymin_, zmin_;
-    double xstart_, ystart_;
-
 public:
-    SearchEngine() { }
+    SearchEngine() = default;
+    virtual ~SearchEngine() { };
 
-    virtual void draw() { }
+    virtual void draw(CoordinateFunc xFunc, CoordinateFunc yFunc) { }
     virtual void search_start() { }
     virtual void search_step() { }
+
     void set_start_point(float xstart, float ystart) {
         xstart_ = xstart;
         ystart_ = ystart;
         this->search_start();
     }
 
-    int count() { return count_; }
-    bool search_over() { return search_over_; }
-    double xmin() { return xmin_; }
-    double ymin() { return ymin_; }
-    double zmin() { return zmin_; }
-};
+    int count() const { return count_; }
+    bool search_over() const { return search_over_; }
+    double xmin() const { return xmin_; }
+    double ymin() const { return ymin_; }
+    double zmin() const { return zmin_; }
 
-#endif
-// SEARCH_ENGINE_H
+protected:
+    int count_{ 0 };
+    bool search_over_{ true };
+    double xmin_{ 0.0 }, ymin_{ 0.0 }, zmin_{ 0.0 };
+    double xstart_{ 0.0 }, ystart_{ 0.0 };
+};

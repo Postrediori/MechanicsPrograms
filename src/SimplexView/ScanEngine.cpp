@@ -1,26 +1,28 @@
-// ScanEngine.cpp
-
-#include <FL/gl.h>
-#include "Func.h"
-#include "Graph.h"
+#include "pch.h"
+#include "MathUtils.h"
+#include "FuncUtils.h"
+#include "GraphUtils.h"
+#include "SearchEngine.h"
 #include "ScanEngine.h"
 
 ScanEngine::ScanEngine() {
     search_start();
 }
 
-void ScanEngine::draw() {
+void ScanEngine::draw(CoordinateFunc xfunc, CoordinateFunc yfunc) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glColor3f(0.0, 0.25, 0.5);
     DrawRectangle(xmin_-0.1, ymin_-0.1, xmin_+0.1, ymin_+0.1);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    //
+#endif
 }
 
 void ScanEngine::search_start() {
-    double xlen, ylen;
-    double sx, sy;
-    xlen = XMax - XMin;
-    ylen = YMax - YMin;
-    sx = 2 * xlen / Epsilon - 1;
-    sy = 2 * ylen / Epsilon - 1;
+    double xlen = XMax - XMin;
+    double ylen = YMax - YMin;
+    double sx = 2 * xlen / Epsilon - 1;
+    double sy = 2 * ylen / Epsilon - 1;
     dx = xlen / sx;
     dy = ylen / sy;
 
@@ -33,11 +35,12 @@ void ScanEngine::search_start() {
 }
 
 void ScanEngine::search_step() {
-    if (search_over_) return;
+    if (search_over_) {
+        return;
+    }
 
-    double x, y;
-    for (x=XMin; x<=XMax; x+=dx) {
-        for (y=YMin; y<=YMax; y+=dy) {
+    for (double x=XMin; x<=XMax; x+=dx) {
+        for (double y=YMin; y<=YMax; y+=dy) {
             double z = func(x,y);
             count_++;
 

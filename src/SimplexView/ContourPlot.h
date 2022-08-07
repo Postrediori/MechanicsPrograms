@@ -1,70 +1,58 @@
-// ContourPlot.h
-#ifndef CONTOUR_PLOT_H
-#define CONTOUR_PLOT_H
-
-#include <vector>
-
-struct vec2 {
-    float x, y;
-
-    vec2() : x(0.0f), y(0.0f) { }
-    vec2(float x, float y) : x(x), y(y) { }
-};
+#pragma once
 
 // ----------------------------------------------------------------------------
 
 class ContourPlot {
-protected:
-    int w_, h_;
-    float xmin_, ymin_;
-    float xmax_, ymax_;
-    float threshold_;
-
 public:
-    ContourPlot() : w_(0), h_(0), threshold_(0.0f) { }
-    virtual ~ContourPlot() { release(); }
+    ContourPlot() = default;
+    virtual ~ContourPlot() { }
 
     virtual bool init(
-        const float * /*points*/, int /*cols*/, int /*rows*/,
+        const std::vector<float>& /*points*/, int /*cols*/, int /*rows*/,
         float /*xmin*/, float /*ymin*/, float /*xmax*/, float /*ymax*/,
         float /*threshold*/
     ) { return true; }
-    virtual void render() { }
+    virtual void render(CoordinateFunc xFunc, CoordinateFunc yFunc) const { }
 
     void resize(int w, int h) { w_ = w; h_ = h; }
-    void release() { }
+
+protected:
+    int w_{ 0 }, h_{ 0 };
+    float xmin_{ 0.0f }, ymin_{ 0.0f };
+    float xmax_{ 0.0f }, ymax_{ 0.0f };
+    float threshold_{ 0.0f };
 };
 
 // ----------------------------------------------------------------------------
 
 class ContourLine: public ContourPlot {
-    std::vector<vec2> lines;
-
 public:
-    ContourLine() : ContourPlot() { }
+    ContourLine() = default;
 
     bool init(
-        const float *points, int cols, int rows,
+        const std::vector<float>& points, int cols, int rows,
         float xmin, float ymin, float xmax, float ymax,
-        float threshold);
+        float threshold) override;
 
-    void render();
+    void render(CoordinateFunc xFunc, CoordinateFunc yFunc) const override;
+
+private:
+    std::vector<vec2> lines;
 };
 
 // ----------------------------------------------------------------------------
 
 class ContourFill: public ContourPlot {
-    std::vector<vec2> triangles;
-
 public:
-    ContourFill() : ContourPlot() { }
+    ContourFill() = default;
 
     bool init(
-        const float *points, int cols, int rows,
+        const std::vector<float>& points, int cols, int rows,
         float xmin, float ymin, float xmax, float ymax,
-        float threshold);
+        float threshold) override;
 
-    void render();
+    void render(CoordinateFunc xFunc, CoordinateFunc yFunc) const override;
+
+private:
+    std::vector<vec2> triangles;
 };
-
-#endif // CONTOUR_PLOT_H

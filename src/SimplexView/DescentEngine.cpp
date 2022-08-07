@@ -1,17 +1,17 @@
-// DescentEngine.cpp
-
-#include <FL/gl.h>
-#include <math.h>
-#include "Func.h"
-#include "Graph.h"
+#include "pch.h"
+#include "MathUtils.h"
+#include "FuncUtils.h"
+#include "GraphUtils.h"
+#include "SearchEngine.h"
 #include "DescentEngine.h"
 
 DescentEngine::DescentEngine() {
     set_start_point(XMin, YMin);
 }
 
-void DescentEngine::draw() {
-    float w;
+void DescentEngine::draw(CoordinateFunc xfunc, CoordinateFunc yfunc) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    float w{ 0.0f };
     glGetFloatv(GL_LINE_WIDTH, &w);
     glLineWidth(3.0);
     glColor3f(0.0, 0.0, 0.0);
@@ -23,6 +23,9 @@ void DescentEngine::draw() {
 
     glColor3f(0.0, 0.25, 0.5);
     DrawRectangle(x-0.1, y-0.1, x+0.1, y+0.1);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    //
+#endif
 }
 
 void DescentEngine::search_start() {
@@ -40,11 +43,13 @@ void DescentEngine::search_start() {
 }
 
 void DescentEngine::search_step() {
-    if (search_over_) return;
+    if (search_over_) {
+        return;
+    }
 
     // Вычисление градиента в точке (x,y)
-    double partialX = (func(x + Epsilon, y) - func(x, y)) / Epsilon;
-    double partialY = (func(x, y + Epsilon) - func(x, y)) / Epsilon;
+    double partialX = dfdx(x, y);
+    double partialY = dfdy(x, y);
     count_ += 4;
 
     // Проверка условия выхода

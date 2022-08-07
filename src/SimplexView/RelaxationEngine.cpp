@@ -1,17 +1,17 @@
-// RelaxationEngine.cpp
-
-#include <FL/gl.h>
-#include <math.h>
-#include "Func.h"
-#include "Graph.h"
+#include "pch.h"
+#include "MathUtils.h"
+#include "FuncUtils.h"
+#include "GraphUtils.h"
+#include "SearchEngine.h"
 #include "RelaxationEngine.h"
 
 RelaxationEngine::RelaxationEngine() {
     set_start_point(XMin, YMin);
 }
 
-void RelaxationEngine::draw() {
-    float w;
+void RelaxationEngine::draw(CoordinateFunc xfunc, CoordinateFunc yfunc) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    float w{ 0.0f };
     glGetFloatv(GL_LINE_WIDTH, &w);
     glLineWidth(3.0);
     glColor3f(0.0, 0.0, 0.0);
@@ -23,6 +23,9 @@ void RelaxationEngine::draw() {
 
     glColor3f(0.0, 0.25, 0.5);
     DrawRectangle(x-0.1, y-0.1, x+0.1, y+0.1);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    //
+#endif
 }
 
 void RelaxationEngine::search_start() {
@@ -56,26 +59,30 @@ void RelaxationEngine::search_step() {
     }
 
     // Определние направления поиска, в котором модуль производной наибольший
-    if (fabs(partialX)>fabs(partialY) && currentVar!=1) currentVar = 1; // x
-    if (fabs(partialY)>fabs(partialX) && currentVar!=2) currentVar = 2; // y
+    if (fabs(partialX) > fabs(partialY) && currentVar != 1) {
+        currentVar = 1; // x
+    }
+    if (fabs(partialY) > fabs(partialX) && currentVar != 2) {
+        currentVar = 2; // y
+    }
 
     // Установка начальных значений для сканирования
     if (currentVar==1) {
         dx = -ddx * signum(partialX);
         dy = 0;
-    } else if (currentVar==2) {
+    }
+    else if (currentVar==2) {
         dx = 0;
         dy = -ddy * signum(partialY);
     }
 
-    double x1, y1, z1, xmin1, ymin1, zmin1;
-    x1 = xmin1 = x;
-    y1 = ymin1 = y;
-    zmin1 = func(x1, y1);
+    double x1 = x, xmin1 = x;
+    double y1 = y, ymin1 = y;
+    double zmin1 = func(x1, y1);
 
     // Сканирование в направлении
     while (x1>=XMin && x1<=XMax && y1>=YMin && y1<=YMax) {
-        z1 = func(x1, y1);
+        double z1 = func(x1, y1);
         count_++;
 
         if (z1<zmin1) {

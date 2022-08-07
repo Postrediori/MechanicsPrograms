@@ -1,17 +1,17 @@
-// GaussSEngine.cpp
-
-#include <FL/gl.h>
-#include <math.h>
-#include "Func.h"
-#include "Graph.h"
+#include "pch.h"
+#include "MathUtils.h"
+#include "FuncUtils.h"
+#include "GraphUtils.h"
+#include "SearchEngine.h"
 #include "GaussSEngine.h"
 
 GaussSEngine::GaussSEngine() {
     set_start_point(XMin, YMin);
 }
 
-void GaussSEngine::draw() {
-    float w;
+void GaussSEngine::draw(CoordinateFunc xfunc, CoordinateFunc yfunc) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    float w{ 0.0f };
     glGetFloatv(GL_LINE_WIDTH, &w);
     glLineWidth(3.0);
     glColor3f(0.0, 0.0, 0.0);
@@ -23,6 +23,9 @@ void GaussSEngine::draw() {
 
     glColor3f(0.0, 0.25, 0.5);
     DrawRectangle(x-0.1, y-0.1, x+0.1, y+0.1);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    //
+#endif
 }
 
 void GaussSEngine::search_start() {
@@ -41,16 +44,20 @@ void GaussSEngine::search_start() {
 }
 
 void GaussSEngine::search_step() {
-    if (search_over_) return;
-    double dx, dy;
-    double x1, y1, z1, x2, y2, z2;
-    double px, py;
+    if (search_over_) {
+        return;
+    }
+    double dx{ 0.0 }, dy{ 0.0 };
+    double x1{ 0.0 }, y1{ 0.0 }, z1{ 0.0 };
+    double x2{ 0.0 }, y2{ 0.0 }, z2{ 0.0 };
+    double px{ 0.0 }, py{ 0.0 };
 
     // Установка приращений в зависимости от текущей переменной
     if (currentVar==1) {
         dx = ddx;
         dy = 0;
-    } else if (currentVar==2) {
+    }
+    else if (currentVar==2) {
         dx = 0;
         dy = ddy;
     }
@@ -97,7 +104,7 @@ void GaussSEngine::search_step() {
         count_++;
     }
 
-    search_over_ = fabs(z1 - zmin_) < Epsilon;
+    search_over_ = almost_equal(z1, zmin_);
     if (z1<zmin_) {
         xold = xmin_;
         yold = ymin_;

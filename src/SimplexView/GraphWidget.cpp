@@ -1,24 +1,21 @@
-// GraphWidget.cpp
-
-#include <FL/gl.h>
-#include <FL/glu.h>
-#include <FL/glut.H>
-#include <cmath>
-#include <iostream>
-#include "Func.h"
-#include "Graph.h"
+#include "pch.h"
+#include "MathUtils.h"
+#include "FuncUtils.h"
+#include "GraphUtils.h"
+#include "SearchEngine.h"
+#include "ContourPlot.h"
 #include "GraphWidget.h"
 
-static const int XDivCount = 100;
-static const int YDivCount = 100;
+namespace PlotParams {
+    constexpr int XDivCount = 100;
+    constexpr int YDivCount = 100;
 
-static const int TickCount = 20;
-static const int TickSize = 10;
-static const int Margin = 20;
+    constexpr int TickCount = 20;
+    constexpr int TickSize = 10;
+    constexpr int Margin = 20;
+}
 
-static const int PlotLevels = 10;
-static const int PaletteSize = PlotLevels;
-static const unsigned char Palette[PaletteSize][4] = {
+const std::vector<ByteColor> Palette = {
     {0xf1, 0xed, 0xc8, 0x00},
     {0xe7, 0xdb, 0xa9, 0x00},
     {0xdd, 0xc9, 0x8a, 0x00},
@@ -30,92 +27,88 @@ static const unsigned char Palette[PaletteSize][4] = {
     {0x6b, 0x99, 0xc9, 0x00},
     {0x51, 0x82, 0xb4, 0x00},
 };
-/* static const unsigned int Palette[PaletteSize] = {
-    0xf1edc8,
-    0xe7dba9,
-    0xddc98a,
-    0xbac596,
-    0xa4caa1,
-    0xbfd5ee,
-    0xa3c3e6,
-    0x89b0da,
-    0x6b99c9,
-    0x5182b4
-}; */
 
-/* static const int PaletteSize = 10;
-static const unsigned int Palette[PaletteSize] = {
-    0xe20800,
-    0xf07113,
-    0xffe429,
-    0x91a87b,
-    0x2c72c7,
-    0x175baa,
-    0x003876,
-    0x003065,
-    0x002754,
-    0x001e43
-}; */
+//const std::vector<ByteColor> Palette = {
+//    {0xe2, 0x08, 0x00, 0x00},
+//    {0xf0, 0x71, 0x13, 0x00},
+//    {0xff, 0xe4, 0x29, 0x00},
+//    {0x91, 0xa8, 0x7b, 0x00},
+//    {0x2c, 0x72, 0xc7, 0x00},
+//    {0x17, 0x5b, 0xaa, 0x00},
+//    {0x00, 0x38, 0x76, 0x00},
+//    {0x00, 0x30, 0x65, 0x00},
+//    {0x00, 0x27, 0x54, 0x00},
+//    {0x00, 0x1e, 0x43, 0x00},
+//};
 
-static const GLfloat ColorLevelLines[] = {0.3f, 0.3f, 0.3f};
-static const GLfloat ColorTicks[]      = {0.0f, 0.0f, 0.0f};
+const ByteColor ColorLevelLines = {0x55, 0x55, 0x55, 0xff};
+const ByteColor ColorTicks = {0, 0, 0, 0xff};
 
-GraphWidget::GraphWidget(int X, int Y, int W, int H,
-                         SearchEngine *engine, const char* l)
- : Fl_Gl_Window(X, Y, W, H, l),
-   contourLines_(NULL), contourFills_(NULL),
-   boundingBox_(NULL),
-   ticksX_(NULL), ticksY_(NULL),
-   engine_(engine) {
+GraphWidget::GraphWidget(int X, int Y, int W, int H, SearchEngine* e, const char* l)
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    : Fl_Gl_Window(X, Y, W, H, l)
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    : Fl_Widget(X, Y, W, H, l)
+#endif
+    , engine_(e) {
+    using namespace PlotParams;
 
-    contourLines_ = new ContourPlot*[PlotLevels];
-    for (int i=0; i<PlotLevels; i++)
-        contourLines_[i] = new ContourLine();
+    boundingBox_ = {
+        vec2(XMin, YMin),
+        vec2(XMax, YMin),
+        vec2(XMax, YMax),
+        vec2(XMin, YMax)
+    };
 
-    contourFills_ = new ContourPlot*[PlotLevels];
-    for (int i=0; i<PlotLevels; i++)
-        contourFills_[i] = new ContourFill();
+    xFunc_ = [=](double x) -> double {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+        return x;
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+        return (x - XMin) / this->pixelX_ + Margin + TickSize;
+#endif
+    };
 
-    pixelX_ = (XMax - XMin) / (this->w() - Margin*2 - TickSize);
-    pixelY_ = (YMax - YMin) / (this->h() - Margin*2 - TickSize);
+    yFunc_ = [=](double y) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+        return y;
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+        return (YMax - y) / this->pixelY_ + Margin;
+#endif
+    };
 
-    create_ticks();
+
+    contourLines_.resize(Palette.size());
+    contourFills_.resize(Palette.size());
+
     create_surface();
+
+    update_size();
 }
 
 GraphWidget::~GraphWidget() {
-    if (ticksX_) {
-        delete[] ticksX_;
-        ticksX_ = NULL;
+#if DRAW_METHOD==DRAW_METHOD_FLTK
+    if (initOffscreen_) {
+        initOffscreen_ = false;
+        fl_delete_offscreen(offscreen_);
     }
+#endif
+}
 
-    if (ticksY_) {
-        delete[] ticksY_;
-        ticksY_ = NULL;
-    }
-
-    if (boundingBox_) {
-        delete[] boundingBox_;
-        boundingBox_ = NULL;
-    }
-
-    if (contourLines_) {
-        for (int i=0; i<PlotLevels; i++)
-            delete contourLines_[i];
-        delete[] contourLines_;
-    }
-
-    if (contourFills_) {
-        for (int i=0; i<PlotLevels; i++)
-            delete contourFills_[i];
-        delete[] contourFills_;
-    }
+void GraphWidget::resize(int x, int y, int w, int h) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    Fl_Gl_Window::resize(x, y, w, h);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    Fl_Widget::resize(x, y, w, h);
+#endif
+    update_size();
 }
 
 void GraphWidget::draw() {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     if (!this->valid()) {
-        pixelX_ = (XMax - XMin) / (this->w() - Margin*2 - TickSize);
-        pixelY_ = (YMax - YMin) / (this->h() - Margin*2 - TickSize);
+        using namespace PlotParams;
+
+        update_size();
 
         glViewport(0, 0, this->w(), this->h());
         glMatrixMode(GL_PROJECTION);
@@ -127,108 +120,177 @@ void GraphWidget::draw() {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
     }
+#endif
 
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     if (!this->context_valid()) {
         glShadeModel(GL_SMOOTH);
         glClearColor(1.0, 1.0, 1.0, 0.5);
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     }
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    if (!initOffscreen_) {
+        initOffscreen_ = true;
+        offscreen_ = fl_create_offscreen(this->w(), this->h());
+    }
+#endif
 
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glClear(GL_COLOR_BUFFER_BIT);
     glLoadIdentity();
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_begin_offscreen(offscreen_);
 
-    // Draw filled contour plot
-    for (int i=0; i<PlotLevels; i++) {
-        glColor3ub(Palette[i][0], Palette[i][1], Palette[i][2]);
-        contourFills_[i]->render();
+    fl_color(fl_rgb_color(255));
+    fl_rectf(0, 0, this->w(), this->h());
+#endif
+
+    draw_contour_plot();
+    draw_contour_lines();
+
+    draw_engine_status();
+
+    draw_box();
+
+    draw_ticks();
+
+    draw_legend();
+
+#if DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_end_offscreen();
+
+    fl_copy_offscreen(this->x(), this->y(), this->w(), this->h(),
+        offscreen_, 0, 0);
+#endif
+}
+
+void GraphWidget::draw_contour_plot() {
+    for (int i = 0; i < Palette.size(); i++) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+        glColor4ubv(Palette[i].data());
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+        fl_color(fl_rgb_color(Palette[i][0], Palette[i][1], Palette[i][2]));
+#endif
+        contourFills_[i].render(xFunc_, yFunc_);
     }
+}
 
-    // Draw contour lines
-    glColor3fv(ColorLevelLines);
-    for (int i=0; i<PlotLevels; i++)
-        contourLines_[i]->render();
+void GraphWidget::draw_contour_lines() {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    glColor4ubv(ColorLevelLines.data());
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_color(fl_rgb_color(ColorLevelLines[0], ColorLevelLines[1], ColorLevelLines[2]));
+#endif
+    for (const auto& p : contourLines_) {
+        p.render(xFunc_, yFunc_);
+    }
+}
 
-    // Draw search status
-    if (engine_!=NULL) engine_->draw();
+void GraphWidget::draw_engine_status() {
+    if (engine_) {
+        engine_->draw(xFunc_, yFunc_);
+    }
+}
 
-    /* Draw box and ticks */
-    glColor3fv(ColorTicks);
+void GraphWidget::draw_box() {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    glColor4ubv(ColorTicks.data());
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    glVertexPointer(2, GL_FLOAT, 0, boundingBox_);
+    glVertexPointer(2, GL_FLOAT, 0, boundingBox_.data());
     glDrawArrays(GL_LINE_LOOP, 0, 4);
 
-    /* Draw ticks */
-    if (ticksX_) {
-        glVertexPointer(2, GL_FLOAT, 0, ticksX_);
+    glDisableClientState(GL_VERTEX_ARRAY);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_color(fl_rgb_color(ColorTicks[0], ColorTicks[1], ColorTicks[2]));
+    fl_line_style(FL_SOLID, 1);
+
+    fl_begin_loop();
+    for (const auto& p : boundingBox_) {
+        fl_vertex(xFunc_(p.x), yFunc_(p.y));
+    }
+    fl_end_loop();
+#endif
+}
+
+void GraphWidget::draw_ticks() {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    using namespace PlotParams;
+
+    glColor4ubv(ColorTicks.data());
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    if (ticksX_.size() > 0) {
+        glVertexPointer(2, GL_FLOAT, 0, ticksX_.data());
         glDrawArrays(GL_LINES, 0, (TickCount + 1) * 2);
     }
 
-    if (ticksY_) {
-        glVertexPointer(2, GL_FLOAT, 0, ticksY_);
+    if (ticksY_.size() > 0) {
+        glVertexPointer(2, GL_FLOAT, 0, ticksY_.data());
         glDrawArrays(GL_LINES, 0, (TickCount + 1) * 2);
     }
 
     glDisableClientState(GL_VERTEX_ARRAY);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_color(fl_rgb_color(ColorTicks[0], ColorTicks[1], ColorTicks[2]));
+    fl_line_style(FL_SOLID, 1);
 
-    // Print plot ranges
-    glRasterPos2d(XMin,
-                  YMin - pixelY_ * (Margin / 2 + TickSize));
-    PrintText(GLUT_BITMAP_HELVETICA_10, "%.1f", XMin);
-
-    glRasterPos2d(XMax,
-                  YMin - pixelY_ * (Margin / 2 + TickSize));
-    PrintText(GLUT_BITMAP_HELVETICA_10, "%.1f", XMax);
-
-    glRasterPos2d(XMin - pixelX_ * (Margin / 2 + TickSize),
-                  YMax - pixelY_ * (Margin / 2));
-    PrintText(GLUT_BITMAP_HELVETICA_10, "%.1f", YMax);
-
-    glRasterPos2d(XMin - pixelX_ * (Margin / 2 + TickSize),
-                  YMin + pixelY_ * (Margin / 2));
-    PrintText(GLUT_BITMAP_HELVETICA_10, "%.1f", YMin);
-}
-
-int GraphWidget::handle(int e) {
-    if (e==FL_PUSH) {
-        // Set start point for search engines
-        int x, y;
-        if (Fl::event_button()==FL_LEFT_MOUSE) {
-            x = Fl::event_x();
-            y = Fl::event_y();
-            x -= (Margin + TickSize);
-            y -= (Margin);
-            // std::cout<<"x: "<<x<<"    y: "<<y<<std::endl;
-            if (x>=0 && x<=(this->w() - Margin * 2 - TickSize) &&
-                y>=0 && y<=(this->h() - Margin * 2 - TickSize)) {
-                float sx, sy;
-                sx = XMin + x * pixelX_;
-                sy = YMax - y * pixelY_;
-                engine_->set_start_point(sx, sy);
-                this->redraw();
-                this->invalidate();
-            }
-        }
-        return 1;
+    for (size_t i = 0; i < ticksX_.size(); i += 2) {
+        const auto& p1 = ticksX_[i];
+        const auto& p2 = ticksX_[i+1];
+        fl_line(xFunc_(p1.x), yFunc_(p1.y),
+            xFunc_(p2.x), yFunc_(p2.y));
     }
 
-    return Fl_Gl_Window::handle(e);
+    for (size_t i = 0; i < ticksY_.size(); i += 2) {
+        const auto& p1 = ticksY_[i];
+        const auto& p2 = ticksY_[i + 1];
+        fl_line(xFunc_(p1.x), yFunc_(p1.y),
+            xFunc_(p2.x), yFunc_(p2.y));
+    }
+#endif
 }
 
+void GraphWidget::draw_legend() {
+    using namespace PlotParams;
 
-void GraphWidget::create_ticks() {
-    boundingBox_ = new vec2[4];
-    boundingBox_[0] = vec2(XMin, YMin);
-    boundingBox_[1] = vec2(XMax, YMin);
-    boundingBox_[2] = vec2(XMax, YMax);
-    boundingBox_[3] = vec2(XMin, YMax);
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    void* font = GLUT_BITMAP_HELVETICA_12;
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    auto font = reinterpret_cast<void*>(12);
+#endif
 
-    float dTick;
+    PrintText(font,
+        xFunc_(XMin), yFunc_(YMin - pixelY_ * (Margin / 2 + TickSize)),
+        0, "%.1f", XMin);
+
+    PrintText(font,
+        xFunc_(XMax), yFunc_(YMin - pixelY_ * (Margin / 2 + TickSize)),
+        0, "%.1f", XMax);
+
+    PrintText(font,
+        xFunc_(XMin - pixelX_ * (Margin / 2 + TickSize)), yFunc_(YMax - pixelY_ * (Margin / 2)),
+        0, "%.1f", YMax);
+
+    PrintText(font,
+        xFunc_(XMin - pixelX_ * (Margin / 2 + TickSize)), yFunc_(YMin + pixelY_ * (Margin / 2)),
+        0, "%.1f", YMin);
+}
+
+void GraphWidget::update_size() {
+    using namespace PlotParams;
+
+    // Update pixel scales
+    pixelX_ = (XMax - XMin) / (this->w() - Margin * 2 - TickSize);
+    pixelY_ = (YMax - YMin) / (this->h() - Margin * 2 - TickSize);
+
+    // Update ticks
+    float dTick{ 0.0f };
 
     /* Y Ticks */
-    ticksY_ = new vec2[(TickCount + 1) * 2];
+    ticksY_.resize((TickCount + 1) * 2);
     dTick = (YMax - YMin) / float(TickCount);
-    for (int i=0; i<=TickCount; i++) {
+    for (int i = 0; i <= TickCount; i++) {
         float y = YMin + i * dTick;
         ticksY_[i * 2].x = XMin;
         ticksY_[i * 2].y = y;
@@ -239,9 +301,9 @@ void GraphWidget::create_ticks() {
     }
 
     /* X Ticks */
-    ticksX_ = new vec2[(TickCount + 1) * 2];
+    ticksX_.resize((TickCount + 1) * 2);
     dTick = (XMax - XMin) / float(TickCount);
-    for (int i=0; i<=TickCount; i++) {
+    for (int i = 0; i <= TickCount; i++) {
         float x = XMin + i * dTick;
         ticksX_[i * 2].y = YMin;
         ticksX_[i * 2].x = x;
@@ -250,14 +312,59 @@ void GraphWidget::create_ticks() {
         ticksX_[i * 2 + 1].y = YMin - float(TickSize) * pixelY_ * tickScale;
         ticksX_[i * 2 + 1].x = x;
     }
+
+#if DRAW_METHOD==DRAW_METHOD_FLTK
+    if (initOffscreen_) {
+        fl_delete_offscreen(offscreen_);
+        offscreen_ = fl_create_offscreen(this->w(), this->h());
+    }
+#endif
+}
+
+int GraphWidget::handle(int e) {
+    if (e==FL_PUSH) {
+        // Set start point for search engines
+        if (Fl::event_button()==FL_LEFT_MOUSE) {
+            using namespace PlotParams;
+
+            int x = Fl::event_x();
+            int y = Fl::event_y();
+            x -= Margin + TickSize;
+            y -= Margin;
+
+            // std::cout<<"x: "<<x<<"    y: "<<y<<std::endl;
+            if (x>=0 && x<=(this->w() - Margin * 2 - TickSize) &&
+                y>=0 && y<=(this->h() - Margin * 2 - TickSize)) {
+
+                float sx = XMin + x * pixelX_;
+                float sy = YMax - y * pixelY_;
+                if (engine_) {
+                    engine_->set_start_point(sx, sy);
+                }
+                this->redraw();
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+                this->invalidate();
+#endif
+            }
+        }
+        return 1;
+    }
+
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    return Fl_Gl_Window::handle(e);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    return Fl_Widget::handle(e);
+#endif
 }
 
 void GraphWidget::create_surface() {
+    using namespace PlotParams;
+
     int rows = YDivCount + 1, cols = XDivCount + 1;
     float zmin = 0.0f, zmax = 0.0f;
     float dx = (XMax - XMin) / float(cols);
     float dy = (YMax - YMin) / float(rows);
-    float *points = new float[rows * cols];
+    std::vector<float> points(rows * cols);
 
     for (int j=0; j<rows; j++) {
         float y = YMin + j * dy;
@@ -270,15 +377,13 @@ void GraphWidget::create_surface() {
         }
     }
 
-    float dz = (sqrt(zmax) - sqrt(zmin)) / float (PlotLevels);
+    float dz = (sqrt(zmax) - sqrt(zmin)) / float (Palette.size());
 
-    for (int i=0; i<PlotLevels; i++) {
+    for (int i=0; i< Palette.size(); i++) {
         float z = sqrt(zmin) + float(i) * dz;
-        contourLines_[i]->init(points, cols, rows,
+        contourLines_[i].init(points, cols, rows,
             XMin, YMin, XMax, YMax, z*z);
-        contourFills_[i]->init(points, cols, rows,
+        contourFills_[i].init(points, cols, rows,
             XMin, YMin, XMax, YMax, z*z);
     }
-
-    delete[] points;
 }

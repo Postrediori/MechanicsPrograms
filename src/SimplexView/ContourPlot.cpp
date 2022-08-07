@@ -1,170 +1,166 @@
-// ContourPlot.cpp
-
+#include "pch.h"
+#include "GraphUtils.h"
+#include "MathUtils.h"
 #include "ContourPlot.h"
-#include <cmath>
-#include <FL/gl.h>
 
-#define TYPE_NORTH_WEST 0x01
-#define TYPE_NORTH_EAST 0x02
-#define TYPE_SOUTH_EAST 0x04
-#define TYPE_SOUTH_WEST 0x08
+using CellType = uint8_t;
+using CellValues = std::array<float, 4>;
 
-static int GetCellType(float vals[]) {
-    int type = 0;
-    if (vals[0]>0.0f) type |= TYPE_NORTH_WEST;
-    if (vals[1]>0.0f) type |= TYPE_NORTH_EAST;
-    if (vals[2]>0.0f) type |= TYPE_SOUTH_EAST;
-    if (vals[3]>0.0f) type |= TYPE_SOUTH_WEST;
+namespace CellTypes {
+    constexpr CellType None = 0x00;
+
+    constexpr CellType NorthWest = 0x01;
+    constexpr CellType NorthEast = 0x02;
+    constexpr CellType SouthEast = 0x04;
+    constexpr CellType SouthWest = 0x08;
+
+    constexpr CellType All = 0x0F;
+}
+
+CellType GetCellType(CellValues vals) {
+    using namespace CellTypes;
+
+    CellType type = None;
+    if (vals[0]>0.0f) type |= NorthWest;
+    if (vals[1]>0.0f) type |= NorthEast;
+    if (vals[2]>0.0f) type |= SouthEast;
+    if (vals[3]>0.0f) type |= SouthWest;
     return type;
 }
 
-void CreateCorner(std::vector<vec2>& lines, int type,
-                float x, float y, float sx, float sy, float vals[]) {
-    float x1, y1;
-    float x2, y2;
+void CreateCorner(std::vector<vec2>& lines, CellType type,
+                float x, float y, float sx, float sy, CellValues vals) {
+    using namespace CellTypes;
+
+    vec2 p1, p2;
 
     switch (type) {
-    case 1:
-    case 14:
-        x1 = x;
-        y1 = y+sy*fabs(vals[0]/(vals[0]-vals[3]));
-        x2 = x+sx*fabs(vals[0]/(vals[0]-vals[1]));
-        y2 = y;
+    case NorthWest:
+    case All ^ NorthWest:
+        p1 = { x, y + sy * fabs(vals[0] / (vals[0] - vals[3])) };
+        p2 = { x + sx * fabs(vals[0] / (vals[0] - vals[1])), y };
         break;
-    case 2:
-    case 13:
-        x1 = x+sx*fabs(vals[0]/(vals[0]-vals[1]));
-        y1 = y;
-        x2 = x+sx;
-        y2 = y+sy*fabs(vals[1]/(vals[1]-vals[2]));
+    case NorthEast:
+    case All ^ NorthEast:
+        p1 = { x + sx * fabs(vals[0] / (vals[0] - vals[1])), y };
+        p2 = { x + sx, y + sy * fabs(vals[1] / (vals[1] - vals[2])) };
         break;
-    case 4:
-    case 11:
-        x1 = x+sx*fabs(vals[3]/(vals[3]-vals[2]));
-        y1 = y+sy;
-        x2 = x+sx;
-        y2 = y+sy*fabs(vals[1]/(vals[1]-vals[2]));
+    case SouthEast:
+    case All ^ SouthEast:
+        p1 = { x + sx * fabs(vals[3] / (vals[3] - vals[2])), y + sy };
+        p2 = { x + sx, y + sy * fabs(vals[1] / (vals[1] - vals[2])) };
         break;
-    case 7:
-    case 8:
-        x1 = x;
-        y1 = y+sy*fabs(vals[0]/(vals[0]-vals[3]));
-        x2 = x+sx*fabs(vals[3]/(vals[3]-vals[2]));
-        y2 = y+sy;
+    case SouthWest:
+    case All ^ SouthWest:
+        p1 = { x, y + sy * fabs(vals[0] / (vals[0] - vals[3])) };
+        p2 = { x + sx * fabs(vals[3] / (vals[3] - vals[2])), y + sy };
         break;
     }
 
-    lines.push_back(vec2(x1, y1));
-    lines.push_back(vec2(x2, y2));
+    lines.push_back(p1);
+    lines.push_back(p2);
 }
 
-void CreateHalf(std::vector<vec2>& lines, int type,
-              float x, float y, float sx, float sy, float vals[]) {
-    float x1, y1;
-    float x2, y2;
+void CreateHalf(std::vector<vec2>& lines, CellType type,
+              float x, float y, float sx, float sy, CellValues vals) {
+    using namespace CellTypes;
+
+    vec2 p1, p2;
 
     switch (type) {
-    case 3:
-    case 12:
-        x1 = x;
-        y1 = y+sy*fabs(vals[0]/(vals[0]-vals[3]));
-        x2 = x+sx;
-        y2 = y+sy*fabs(vals[1]/(vals[1]-vals[2]));
+    case NorthWest | NorthEast:
+    case All ^ (NorthWest | NorthEast):
+        p1 = { x, y + sy * fabs(vals[0] / (vals[0] - vals[3])) };
+        p2 = { x + sx,y + sy * fabs(vals[1] / (vals[1] - vals[2])) };
         break;
-    case 6:
-    case 9:
-        x1 = x+sx*fabs(vals[0]/(vals[0]-vals[1]));
-        y1 = y;
-        x2 = x+sx*fabs(vals[3]/(vals[3]-vals[2]));
-        y2 = y+sy;
+    case NorthEast | SouthEast:
+    case All ^ (NorthEast | SouthEast):
+        p1 = { x + sx * fabs(vals[0] / (vals[0] - vals[1])), y };
+        p2 = { x + sx * fabs(vals[3] / (vals[3] - vals[2])), y + sy };
         break;
     }
 
-    lines.push_back(vec2(x1, y1));
-    lines.push_back(vec2(x2, y2));
+    lines.push_back(p1);
+    lines.push_back(p2);
 }
 
-void CreateAmbiguity(std::vector<vec2>& lines, int flags,
-                   float x, float y, float sx, float sy, float vals[], float /*v*/,
+void CreateAmbiguity(std::vector<vec2>& lines, CellType flags,
+                   float x, float y, float sx, float sy, CellValues vals, float /*v*/,
                    bool u) {
-    float x1, y1;
-    float x2, y2;
-    float x3, y3;
-    float x4, y4;
+    using namespace CellTypes;
 
-    if ((flags==5 && u) || (flags==10 && !u)) {
-        x1 = x;
-        y1 = y+sy*fabs(vals[0]/(vals[0]-vals[3]));
-        x2 = x+sx*fabs(vals[3]/(vals[3]-vals[2]));
-        y2 = y+sy;
+    vec2 p1, p2, p3, p4;
 
-        x3 = x+sx*fabs(vals[0]/(vals[0]-vals[1]));
-        y3 = y;
-        x4 = x+sx;
-        y4 = y+sy*fabs(vals[1]/(vals[1]-vals[2]));
+    if ((flags==(NorthWest | SouthEast) && u) ||
+            (flags==(NorthEast | SouthWest) && !u)) {
+        p1 = { x, y + sy * fabs(vals[0] / (vals[0] - vals[3])) };
+        p2 = { x + sx * fabs(vals[3] / (vals[3] - vals[2])), y + sy };
+
+        p3 = { x + sx * fabs(vals[0] / (vals[0] - vals[1])), y };
+        p4 = { x + sx, y + sy * fabs(vals[1] / (vals[1] - vals[2])) };
     }
 
-    if ((flags==5 && !u) || (flags==10 && u)) {
-        x1 = x;
-        y1 = y+sy*fabs(vals[0]/(vals[0]-vals[3]));
-        x2 = x+sx*fabs(vals[0]/(vals[0]-vals[1]));
-        y2 = y;
+    if ((flags==(NorthWest | SouthEast) && !u) ||
+            (flags== (NorthEast | SouthWest) && u)) {
+        p1 = { x, y + sy * fabs(vals[0] / (vals[0] - vals[3])) };
+        p2 = { x + sx * fabs(vals[0] / (vals[0] - vals[1])), y };
 
-        x3 = x+sx*fabs(vals[3]/(vals[3]-vals[2]));
-        y3 = y+sy;
-        x4 = x+sx;
-        y4 = y+sy*fabs(vals[1]/(vals[1]-vals[2]));
+        p3 = { x + sx * fabs(vals[3] / (vals[3] - vals[2])), y + sy };
+        p4 = { x + sx, y + sy * fabs(vals[1] / (vals[1] - vals[2])) };
     }
 
-    lines.push_back(vec2(x1, y1));
-    lines.push_back(vec2(x2, y2));
-    lines.push_back(vec2(x3, y3));
-    lines.push_back(vec2(x4, y4));
+    lines.push_back(p1);
+    lines.push_back(p2);
+    lines.push_back(p3);
+    lines.push_back(p4);
 }
 
 void CreateFullFilled(std::vector<vec2>& triangles,
               float x, float y, float sx, float sy) {
-    triangles.push_back(vec2(x,    y));
-    triangles.push_back(vec2(x+sx, y+sy));
-    triangles.push_back(vec2(x,    y+sy));
+    triangles.emplace_back(x, y);
+    triangles.emplace_back(x+sx, y+sy);
+    triangles.emplace_back(x, y+sy);
 
-    triangles.push_back(vec2(x,    y));
-    triangles.push_back(vec2(x+sx, y));
-    triangles.push_back(vec2(x+sx, y+sy));
+    triangles.emplace_back(x, y);
+    triangles.emplace_back(x+sx, y);
+    triangles.emplace_back(x+sx, y+sy);
 }
 
-void CreateFilledCorner(std::vector<vec2>& triangles, int type,
-                    float x, float y, float sx, float sy, float vals[]) {
+void CreateFilledCorner(std::vector<vec2>& triangles, CellType type,
+                    float x, float y, float sx, float sy, CellValues vals) {
+    using namespace CellTypes;
+
     float x1, y1;
     float x2, y2;
+    vec2 p1, p2;
 
     switch (type) {
-    case 1:
-    case 14:
+    case NorthWest:
+    case All^ NorthWest:
         x1 = x+sx*fabs(vals[0]/(vals[0]-vals[1]));
         y1 = y;
         x2 = x;
         y2 = y+sy*fabs(vals[0]/(vals[0]-vals[3]));
         break;
 
-    case 2:
-    case 13:
+    case NorthEast:
+    case All^ NorthEast:
         x1 = x+sx;
         y1 = y+sy*fabs(vals[1]/(vals[1]-vals[2]));
         x2 = x+sx*fabs(vals[0]/(vals[0]-vals[1]));
         y2 = y;
         break;
 
-    case 4:
-    case 11:
+    case SouthEast:
+    case All^ SouthEast:
         x1 = x+sx*fabs(vals[3]/(vals[3]-vals[2]));
         y1 = y+sy;
         x2 = x+sx;
         y2 = y+sy*fabs(vals[1]/(vals[1]-vals[2]));
         break;
 
-    case 7:
-    case 8:
+    case SouthWest:
+    case All^ SouthWest:
         x1 = x;
         y1 = y+sy*fabs(vals[0]/(vals[0]-vals[3]));
         x2 = x+sx*fabs(vals[3]/(vals[3]-vals[2]));
@@ -246,8 +242,8 @@ void CreateFilledCorner(std::vector<vec2>& triangles, int type,
     }
 }
 
-void CreateFilledHalf(std::vector<vec2>& triangles, int type,
-                  float x, float y, float sx, float sy, float vals[]) {
+void CreateFilledHalf(std::vector<vec2>& triangles, CellType type,
+                  float x, float y, float sx, float sy, CellValues vals) {
     float x1, y1;
     float x2, y2;
     float x3, y3;
@@ -308,8 +304,8 @@ void CreateFilledHalf(std::vector<vec2>& triangles, int type,
     triangles.push_back(vec2(x3, y3));
 }
 
-void CreateFilledAmbiguity(std::vector<vec2>& triangles, int type,
-                       float x, float y, float sx, float sy, float vals[],
+void CreateFilledAmbiguity(std::vector<vec2>& triangles, CellType type,
+                       float x, float y, float sx, float sy, CellValues vals,
                        float /*v*/, bool u) {
     float x1, y1;
     float x2, y2;
@@ -358,18 +354,20 @@ void CreateFilledAmbiguity(std::vector<vec2>& triangles, int type,
 // ----------------------------------------------------------------------------
 
 bool ContourLine::init(
-        const float *points, int cols, int rows,
+        const std::vector<float>& points, int cols, int rows,
         float xmin, float ymin, float xmax, float ymax,
         float threshold) {
+    using namespace CellTypes;
+
     xmin_ = xmin; ymin_ = ymin;
     xmax_ = xmax; ymax_ = ymax;
     threshold_ = threshold;
 
-    float dx, dy;
-    dx = (xmax_ - xmin_) / float(rows - 1);
-    dy = (ymax_ - ymin_) / float(cols - 1);
+    float dx = (xmax_ - xmin_) / float(rows - 1);
+    float dy = (ymax_ - ymin_) / float(cols - 1);
 
-    float vals[4];
+    CellValues vals;
+    float v{ 0.0f };
 
     lines.clear();
 
@@ -383,7 +381,7 @@ bool ContourLine::init(
             vals[2] = points[(j+1) * rows + (i+1)] - threshold_;
             vals[3] = points[(j+1) * rows + (i  )] - threshold_;
 
-            int type = GetCellType(vals);
+            CellType type = GetCellType(vals);
             switch (type) {
             case 1:
             case 2:
@@ -408,15 +406,17 @@ bool ContourLine::init(
             case 5:
             case 10:
                 // Ambiguity
-                float v; bool flag;
                 v = (vals[0] + vals[1] + vals[2] + vals[3]) / 4.f;
-                flag = v > 0.0f;
-                CreateAmbiguity(lines, type, x, y, dx, dy, vals, v, flag);
+                CreateAmbiguity(lines, type, x, y, dx, dy, vals,
+                    v, v > 0.0f);
                 break;
 
-            case 0: case 15:
-            default:
+            case None:
+            case All:
                 // No lines
+                break;
+
+            default:
                 break;
             }
         }
@@ -425,30 +425,44 @@ bool ContourLine::init(
     return true;
 }
 
-void ContourLine::render() {
+void ContourLine::render(CoordinateFunc xFunc, CoordinateFunc yFunc) const {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glEnableClientState(GL_VERTEX_ARRAY);
 
     glVertexPointer(2, GL_FLOAT, 0, lines.data());
     glDrawArrays(GL_LINES, 0, lines.size());
 
     glDisableClientState(GL_VERTEX_ARRAY);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_line_style(FL_SOLID, 1);
+    for (int i = 0; i < lines.size(); i += 2) {
+        const auto& p1 = lines[i];
+        const auto& p2 = lines[i + 1];
+        fl_line(
+            xFunc(p1.x), yFunc(p1.y),
+            xFunc(p2.x), yFunc(p2.y)
+        );
+    }
+#endif
 }
 
 // ----------------------------------------------------------------------------
 
 bool ContourFill::init(
-        const float *points, int cols, int rows,
+        const std::vector<float>& points, int cols, int rows,
         float xmin, float ymin, float xmax, float ymax,
         float threshold) {
+    using namespace CellTypes;
+
     xmin_ = xmin; ymin_ = ymin;
     xmax_ = xmax; ymax_ = ymax;
     threshold_ = threshold;
 
-    float dx, dy;
-    dx = (xmax_ - xmin_) / float(rows - 1);
-    dy = (ymax_ - ymin_) / float(cols - 1);
+    float dx = (xmax_ - xmin_) / float(rows - 1);
+    float dy = (ymax_ - ymin_) / float(cols - 1);
 
-    float vals[4];
+    CellValues vals;
+    float v{ 0.0f };
 
     triangles.clear();
 
@@ -462,7 +476,7 @@ bool ContourFill::init(
             vals[2] = points[(j+1) * rows + (i+1)] - threshold_;
             vals[3] = points[(j+1) * rows + (i  )] - threshold_;
 
-            int type = GetCellType(vals);
+            CellType type = GetCellType(vals);
             switch (type) {
             case 1:
             case 2:
@@ -487,20 +501,21 @@ bool ContourFill::init(
             case 5:
             case 10:
                 // Ambiguity
-                float v; bool flag;
                 v = (vals[0] + vals[1] + vals[2] + vals[3]) / 4.f;
-                flag = v > 0.0f;
-                CreateFilledAmbiguity(triangles, type, x, y, dx, dy, vals, v, flag);
+                CreateFilledAmbiguity(triangles, type, x, y, dx, dy, vals,
+                    v, v > 0.0f);
                 break;
 
-            case 15:
+            case All:
                 // Full filled
                 CreateFullFilled(triangles, x, y, dx, dy);
                 break;
 
-            case 0:
-            default:
+            case None:
                 // No lines
+                break;
+
+            default:
                 break;
             }
         }
@@ -509,11 +524,25 @@ bool ContourFill::init(
     return true;
 }
 
-void ContourFill::render() {
+void ContourFill::render(CoordinateFunc xFunc, CoordinateFunc yFunc) const {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glEnableClientState(GL_VERTEX_ARRAY);
 
     glVertexPointer(2, GL_FLOAT, 0, triangles.data());
     glDrawArrays(GL_TRIANGLES, 0, triangles.size());
 
     glDisableClientState(GL_VERTEX_ARRAY);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_line_style(FL_SOLID, 1);
+    for (int i = 0; i < triangles.size(); i += 3) {
+        const auto& p1 = triangles[i];
+        const auto& p2 = triangles[i + 1];
+        const auto& p3 = triangles[i + 2];
+        fl_polygon(
+            xFunc(p1.x), yFunc(p1.y),
+            xFunc(p2.x), yFunc(p2.y),
+            xFunc(p3.x), yFunc(p3.y)
+        );
+    }
+#endif
 }

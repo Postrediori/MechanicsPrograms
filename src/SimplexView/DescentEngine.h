@@ -1,22 +1,16 @@
-// DescentEngine.h
-#ifndef DESCENT_ENGINE_H
-#define DESCENT_ENGINE_H
-
-#include "SearchEngine.h"
+#pragma once
 
 class DescentEngine: public SearchEngine {
-    double x, y;
-    double ddx, ddy;
-    double xold, yold;
-
 public:
     DescentEngine();
 
-    void draw();
+    void draw(CoordinateFunc xfunc, CoordinateFunc yfunc) override;
 
-    void search_start();
-    void search_step();
+    void search_start() override;
+    void search_step() override;
+
+private:
+    double x{ 0.0 }, y{ 0.0 };
+    double ddx{ 0.0 }, ddy{ 0.0 };
+    double xold{ 0.0 }, yold{ 0.0 };
 };
-
-#endif
-// DESCENT_ENGINE_H

@@ -1,26 +1,18 @@
-// SimplexEngine.h
-#ifndef SIMPLEX_ENGINE_H
-#define SIMPLEX_ENGINE_H
-
-#include <vector>
-#include "Func.h"
-#include "Simplex.h"
-#include "SearchEngine.h"
+#pragma once
 
 class SimplexEngine: public SearchEngine {
-    SIMPLEX simplex_;
-    std::vector<SIMPLEX> history_;
-    
-    void update_min();
-
 public:
     SimplexEngine();
 
-    void draw();
+    void draw(CoordinateFunc xFunc, CoordinateFunc yFunc) override;
 
-    void search_start();
-    void search_step();
+    void search_start() override;
+    void search_step() override;
+
+private:
+    void update_min();
+
+private:
+    Simplex simplex_;
+    std::vector<Simplex> history_;
 };
-
-#endif
-// SIMPLEX_ENGINE_H

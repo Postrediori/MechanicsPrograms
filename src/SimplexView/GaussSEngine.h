@@ -1,23 +1,18 @@
-// GaussSEngine.h
-#ifndef GAUSSS_ENGINE_H
-#define GAUSSS_ENGINE_H
-
-#include "SearchEngine.h"
+#pragma once
 
 class GaussSEngine: public SearchEngine {
-    int currentVar;
-    double ddx, ddy;
-    double x, y;
-    double xold, yold;
-
 public:
     GaussSEngine();
 
-    void draw();
+    void draw(CoordinateFunc xfunc, CoordinateFunc yfunc) override;
 
-    void search_start();
-    void search_step();
+    void search_start() override;
+    void search_step() override;
+
+private:
+    int currentVar{ 0 };
+
+    double ddx{ 0.0 }, ddy{ 0.0 };
+    double x{ 0.0 }, y{ 0.0 };
+    double xold{ 0.0 }, yold{ 0.0 };
 };
-
-#endif
-// GAUSSS_ENGINE_H

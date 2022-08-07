@@ -1,42 +1,69 @@
-// SimplexEngine.cpp
-
-#include <FL/gl.h>
-#include <cmath>
-#include "Graph.h"
+#include "pch.h"
+#include "MathUtils.h"
+#include "GraphUtils.h"
+#include "FuncUtils.h"
+#include "Simplex.h"
+#include "SearchEngine.h"
 #include "SimplexEngine.h"
 
-static const GLfloat SimplexColor[]        = {0.f, 0.f, 0.f, 1.f};
-static const GLfloat SimplexHistoryColor[] = {.5f, .5f, .5f, 1.f};
-static const GLfloat SimplexNode[]         = {0.f, 0.f, 0.f, 1.f};
-static const GLfloat SimplexActiveNode[]   = {0.f, 0.f, 1.f, 1.f};
+const ByteColor SimplexColor = {0, 0, 0, 0xff};
+const ByteColor SimplexHistoryColor = {128, 128, 128, 0xff};
+const ByteColor SimplexNode = {0, 0, 0, 0xff};
+const ByteColor SimplexActiveNode = {0, 0, 0xff, 0xff};
 
-void DrawSimplex(const SIMPLEX &s) {
+void DrawSimplex(CoordinateFunc xFunc, CoordinateFunc yFunc,
+        const Simplex&s) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     glBegin(GL_LINE_LOOP);
-    for (int i=0; i<SimplexOrder; i++)
-        glVertex2f(s.points[i].x, s.points[i].y);
-    glVertex2f(s.points[0].x, s.points[0].y);
+    for (const auto& p : s.points) {
+        glVertex2f(xFunc(p.x), yFunc(p.y));
+    }
+    glVertex2f(xFunc(s.points[0].x), yFunc(s.points[0].y));
     glEnd();
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_begin_loop();
+    for (const auto& p : s.points) {
+        fl_vertex(xFunc(p.x), yFunc(p.y));
+    }
+    fl_end_loop();
+#endif
 }
 
 SimplexEngine::SimplexEngine() {
     set_start_point(0.f, -2.5f);
 }
 
-void SimplexEngine::draw() {
-    glColor4fv(SimplexHistoryColor);
-    for (size_t i=0; i<history_.size(); i++)
-        DrawSimplex(history_[i]);
+void SimplexEngine::draw(CoordinateFunc xFunc, CoordinateFunc yFunc) {
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    glColor4ubv(SimplexHistoryColor.data());
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_color(fl_rgb_color(SimplexHistoryColor[0], SimplexHistoryColor[1], SimplexHistoryColor[2]));
+    fl_line_style(FL_SOLID, 1);
+#endif
+    for (const auto &s : history_) {
+        DrawSimplex(xFunc, yFunc, s);
+    }
 
-    glColor4fv(SimplexColor);
-    DrawSimplex(simplex_);
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    glColor4ubv(SimplexColor.data());
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_color(fl_rgb_color(SimplexColor[0], SimplexColor[1], SimplexColor[2]));
+    fl_line_style(FL_SOLID, 1);
+#endif
+    DrawSimplex(xFunc, yFunc, simplex_);
 
     for (int i=0; i<SimplexOrder; i++) {
-        if (simplex_.max_node==i) glColor4fv(SimplexActiveNode);
-        else glColor4fv(SimplexNode);
-        DrawRectangle(simplex_.points[i].x-0.05,
-                      simplex_.points[i].y-0.05,
-                      simplex_.points[i].x+0.05,
-                      simplex_.points[i].y+0.05);
+        const auto nodeColor = (simplex_.max_node == i) ? SimplexActiveNode : SimplexNode;
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+        glColor4ubv(nodeColor.data());
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+        fl_color(fl_rgb_color(nodeColor[0], nodeColor[1], nodeColor[2]));
+#endif
+        constexpr double PointSize = 0.05;
+        DrawRectangle(xFunc(simplex_.points[i].x - PointSize),
+                      yFunc(simplex_.points[i].y - PointSize),
+                      xFunc(simplex_.points[i].x + PointSize),
+                      yFunc(simplex_.points[i].y + PointSize));
     }
 }
 
@@ -56,7 +83,9 @@ void SimplexEngine::search_start() {
 }
 
 void SimplexEngine::search_step() {
-    if (search_over_) return;
+    if (search_over_) {
+        return;
+    }
     history_.push_back(simplex_);
 
     int max_node = simplex_.getMaxNode();
@@ -69,11 +98,13 @@ void SimplexEngine::search_step() {
     simplex_.max_node = max_node;
 
     update_min();
-    if (simplex_.getSize()<=Epsilon) search_over_ = true;
+    if (simplex_.getSize() <= Epsilon) {
+        search_over_ = true;
+    }
 }
 
 void SimplexEngine::update_min() {
-    SIMPLEX_POINT pt = simplex_.getMinPoint();
+    vec4 pt = simplex_.getMinPoint();
     xmin_ = pt.x;
     ymin_ = pt.y;
     zmin_ = pt.z;

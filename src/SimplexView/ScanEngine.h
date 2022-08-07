@@ -1,20 +1,14 @@
-// ScanEngine.h
-#ifndef SCAN_ENGINE_H
-#define SCAN_ENGINE_H
-
-#include "SearchEngine.h"
+#pragma once
 
 class ScanEngine: public SearchEngine {
-    double dx, dy;
-
 public:
     ScanEngine();
 
-    void draw();
+    void draw(CoordinateFunc xfunc, CoordinateFunc yfunc) override;
 
-    void search_start();
-    void search_step();
+    void search_start() override;
+    void search_step() override;
+
+private:
+    double dx{ 0.0 }, dy{ 0.0 };
 };
-
-#endif
-// SCAN_ENGINE_H

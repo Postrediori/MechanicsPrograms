@@ -76,7 +76,6 @@ GraphWidget::GraphWidget(int X, int Y, int W, int H, SearchEngine* e, const char
 #endif
     };
 
-
     contourLines_.resize(Palette.size());
     contourFills_.resize(Palette.size());
 
@@ -88,8 +87,8 @@ GraphWidget::GraphWidget(int X, int Y, int W, int H, SearchEngine* e, const char
 GraphWidget::~GraphWidget() {
 #if DRAW_METHOD==DRAW_METHOD_FLTK
     if (initOffscreen_) {
-        initOffscreen_ = false;
         fl_delete_offscreen(offscreen_);
+        fl_delete_offscreen(contourOfs_);
     }
 #endif
 }
@@ -128,25 +127,33 @@ void GraphWidget::draw() {
         glClearColor(1.0, 1.0, 1.0, 0.5);
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     }
-#elif DRAW_METHOD==DRAW_METHOD_FLTK
-    if (!initOffscreen_) {
-        initOffscreen_ = true;
-        offscreen_ = fl_create_offscreen(this->w(), this->h());
-    }
 #endif
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
     glClear(GL_COLOR_BUFFER_BIT);
     glLoadIdentity();
-#elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_begin_offscreen(offscreen_);
-
-    fl_color(fl_rgb_color(255));
-    fl_rectf(0, 0, this->w(), this->h());
-#endif
 
     draw_contour_plot();
     draw_contour_lines();
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    if (contourOfsNeedsRedraw_) {
+        fl_begin_offscreen(contourOfs_);
+
+        fl_color(fl_rgb_color(255));
+        fl_rectf(0, 0, this->w(), this->h());
+
+        draw_contour_plot();
+        draw_contour_lines();
+
+        fl_end_offscreen();
+
+        contourOfsNeedsRedraw_ = false;
+    }
+
+    fl_begin_offscreen(offscreen_);
+
+    fl_copy_offscreen(0, 0, w(), h(), contourOfs_, 0, 0);
+#endif
 
     draw_engine_status();
 
@@ -316,8 +323,15 @@ void GraphWidget::update_size() {
 #if DRAW_METHOD==DRAW_METHOD_FLTK
     if (initOffscreen_) {
         fl_delete_offscreen(offscreen_);
-        offscreen_ = fl_create_offscreen(this->w(), this->h());
+        fl_delete_offscreen(contourOfs_);
     }
+
+    offscreen_ = fl_create_offscreen(this->w(), this->h());
+    contourOfs_ = fl_create_offscreen(this->w(), this->h());
+
+    initOffscreen_ = true;
+
+    contourOfsNeedsRedraw_ = true;
 #endif
 }
 

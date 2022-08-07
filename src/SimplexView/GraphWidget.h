@@ -45,5 +45,8 @@ private:
 #if DRAW_METHOD==DRAW_METHOD_FLTK
     bool initOffscreen_{ false };
     Fl_Offscreen offscreen_;
+    Fl_Offscreen contourOfs_;
+
+    bool contourOfsNeedsRedraw_{ true };
 #endif
 };

@@ -17,7 +17,7 @@ public:
     static void set_engine_cb(Fl_Widget*, void*);
 
 private:
-    std::vector<std::unique_ptr<SearchEngine>> engines_;
+    std::vector<std::tuple<std::string, std::unique_ptr<SearchEngine>>> engines_;
     int current_engine_{ 0 };
 
     GraphWidget* graph_{ nullptr };

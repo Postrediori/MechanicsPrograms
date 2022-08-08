@@ -5,17 +5,22 @@
 #include "SearchEngine.h"
 #include "ScanEngine.h"
 
+const ByteColor MarkerColor = {0, 64, 128, 0xff};
+
 ScanEngine::ScanEngine() {
     search_start();
 }
 
-void ScanEngine::draw(CoordinateFunc xfunc, CoordinateFunc yfunc) {
+void ScanEngine::draw(CoordinateFunc xFunc, CoordinateFunc yFunc) {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor3f(0.0, 0.25, 0.5);
-    DrawRectangle(xmin_-0.1, ymin_-0.1, xmin_+0.1, ymin_+0.1);
+    glColor4ubf(MarkerColor.data());
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    //
+    fl_color(fl_rgb_color(MarkerColor[0], MarkerColor[1], MarkerColor[2]));
 #endif
+    constexpr double PointSize = 0.1;
+    DrawRectangle(
+        xFunc(xmin_ - PointSize), yFunc(ymin_ - PointSize),
+        xFunc(xmin_ + PointSize), yFunc(ymin_ + PointSize));
 }
 
 void ScanEngine::search_start() {
@@ -23,8 +28,8 @@ void ScanEngine::search_start() {
     double ylen = YMax - YMin;
     double sx = 2 * xlen / Epsilon - 1;
     double sy = 2 * ylen / Epsilon - 1;
-    dx = xlen / sx;
-    dy = ylen / sy;
+    dx_ = xlen / sx;
+    dy_ = ylen / sy;
 
     xmin_ = XMin;
     ymin_ = YMin;
@@ -39,8 +44,8 @@ void ScanEngine::search_step() {
         return;
     }
 
-    for (double x=XMin; x<=XMax; x+=dx) {
-        for (double y=YMin; y<=YMax; y+=dy) {
+    for (double x = XMin; x <= XMax; x += dx_) {
+        for (double y = YMin; y <= YMax; y += dy_) {
             double z = func(x,y);
             count_++;
 

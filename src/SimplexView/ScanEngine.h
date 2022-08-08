@@ -4,11 +4,11 @@ class ScanEngine: public SearchEngine {
 public:
     ScanEngine();
 
-    void draw(CoordinateFunc xfunc, CoordinateFunc yfunc) override;
+    void draw(CoordinateFunc xFunc, CoordinateFunc yFunc) override;
 
     void search_start() override;
     void search_step() override;
 
 private:
-    double dx{ 0.0 }, dy{ 0.0 };
+    double dx_{ 0.0 }, dy_{ 0.0 };
 };

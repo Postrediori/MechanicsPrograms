@@ -15,26 +15,18 @@
 
 constexpr double TimerInterval = 1.0;
 
-const std::vector<std::string> SearchEngineNames = {
-    "Nelder-Mead method",
-    "Gauss-Seidel method",
-    "Gradient descent",
-    "Coordinate descent",
-    "Scaning"
-};
-
 MainWindow::MainWindow(int w, int h, const char* title)
         : Fl_Window(w, h, title) {
     begin();
 
-    engines_.push_back(std::make_unique<SimplexEngine>());
-    engines_.push_back(std::make_unique<GaussSEngine>());
-    engines_.push_back(std::make_unique<DescentEngine>());
-    engines_.push_back(std::make_unique<RelaxationEngine>());
-    engines_.push_back(std::make_unique<ScanEngine>());
+    engines_.push_back({"Nelder-Mead method", std::make_unique<SimplexEngine>()});
+    engines_.push_back({"Gauss-Seidel method", std::make_unique<GaussSEngine>()});
+    engines_.push_back({"Gradient descent", std::make_unique<DescentEngine>()});
+    engines_.push_back({"Coordinate descent", std::make_unique<RelaxationEngine>()});
+    engines_.push_back({"Scaning", std::make_unique<ScanEngine>()});
     current_engine_ = 0;
 
-    graph_ = new GraphWidget(5, 5, 490, 490, engines_.at(current_engine_).get(), "Plot of F(x,y)");
+    graph_ = new GraphWidget(5, 5, 490, 490, std::get<1>(engines_.at(current_engine_)).get(), "Plot of F(x,y)");
 
     buffer_ = new Fl_Text_Buffer(1024);
 
@@ -51,11 +43,11 @@ MainWindow::MainWindow(int w, int h, const char* title)
     search_engines->box(FL_SHADOW_BOX);
     search_engines->begin();
 
-    for (int i = 0; i < SearchEngineNames.size(); i++) {
+    for (int i = 0; i < engines_.size(); i++) {
         auto engine_btn = new Fl_Round_Button(
             510, 260 + 30 * i,
             175, 23,
-            SearchEngineNames[i].c_str());
+            std::get<0>(engines_.at(i)).c_str());
         engine_btn->type(FL_RADIO_BUTTON);
         engine_btn->callback(set_engine_cb, reinterpret_cast<void*>(i));
 
@@ -75,7 +67,7 @@ void MainWindow::refresh() {
     constexpr size_t BufferLength = 256;
     char string[BufferLength] = { 0 };
 
-    const auto& engine = engines_.at(current_engine_);
+    const auto& engine = std::get<1>(engines_.at(current_engine_));
 
     buffer_->select(0, buffer_->length());
     buffer_->remove_selection();
@@ -96,20 +88,19 @@ void MainWindow::refresh() {
     buffer_->append(string);
 
     graph_->redraw();
-    // graph_->invalidate();
 }
 
 void MainWindow::search_start() {
-    engines_.at(current_engine_)->search_start();
+    std::get<1>(engines_.at(current_engine_))->search_start();
 }
 
 void MainWindow::search_step() {
-    engines_.at(current_engine_)->search_step();
+    std::get<1>(engines_.at(current_engine_))->search_step();
     refresh();
 }
 
 bool MainWindow::search_over() {
-    return engines_.at(current_engine_)->search_over();
+    return std::get<1>(engines_.at(current_engine_))->search_over();
 }
 
 void MainWindow::engine(int idx) {
@@ -118,7 +109,9 @@ void MainWindow::engine(int idx) {
         return;
     }
     current_engine_ = idx;
-    graph_->engine(engines_.at(current_engine_).get());
+    auto& e = std::get<1>(engines_.at(current_engine_));
+    e->search_start();
+    graph_->engine(e.get());
     refresh();
 }
 
@@ -148,7 +141,7 @@ void MainWindow::set_engine_cb(Fl_Widget* w, void* p) {
     Fl::remove_timeout(timer_cb);
 
     auto window = static_cast<MainWindow*>(w->parent()->parent());
-    auto engine = reinterpret_cast<int>(p);
+    auto engine = static_cast<int>(reinterpret_cast<uintptr_t>(p));
 
     window->engine(engine);
 }

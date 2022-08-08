@@ -5,27 +5,50 @@
 #include "SearchEngine.h"
 #include "DescentEngine.h"
 
+const ByteColor LineColor = {0, 0, 0, 0xff};
+const ByteColor PreviousMarkerColor = {128, 64, 0, 0xff};
+const ByteColor CurrentMarkerColor = {0, 64, 128, 0xff};
+
 DescentEngine::DescentEngine() {
     set_start_point(XMin, YMin);
 }
 
-void DescentEngine::draw(CoordinateFunc xfunc, CoordinateFunc yfunc) {
+void DescentEngine::draw(CoordinateFunc xFunc, CoordinateFunc yFunc) {
+    constexpr double PointSize = 0.1;
+    constexpr int LineWidth = 3;
+
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    float w{ 0.0f };
-    glGetFloatv(GL_LINE_WIDTH, &w);
-    glLineWidth(3.0);
-    glColor3f(0.0, 0.0, 0.0);
-    DrawLine(xold, yold, x, y);
-    glLineWidth(w);
-
-    glColor3f(0.5, 0.25, 0.0);
-    DrawRectangle(xold-0.1, yold-0.1, xold+0.1, yold+0.1);
-
-    glColor3f(0.0, 0.25, 0.5);
-    DrawRectangle(x-0.1, y-0.1, x+0.1, y+0.1);
+    float oldW{ 0.0f };
+    glGetFloatv(GL_LINE_WIDTH, &oldW);
+    glLineWidth(LineWidth);
+    glColor4ubv(LineColor.data());
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    //
+    fl_line_style(FL_SOLID, LineWidth);
+    fl_color(fl_rgb_color(LineColor[0], LineColor[1], LineColor[2]));
 #endif
+
+    DrawLine(
+        xFunc(xold_), yFunc(yold_),
+        xFunc(x_), yFunc(y_));
+
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    glLineWidth(oldW);
+    glColor4ubv(PreviousMarkerColor.data());
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_color(fl_rgb_color(PreviousMarkerColor[0], PreviousMarkerColor[1], PreviousMarkerColor[2]));
+#endif
+    DrawRectangle(
+        xFunc(xold_ - PointSize), yFunc(yold_ - PointSize),
+        xFunc(xold_ + PointSize), yFunc(yold_ + PointSize));
+
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    glColor4ubv(CurrentMarkerColor.data());
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_color(fl_rgb_color(CurrentMarkerColor[0], CurrentMarkerColor[1], CurrentMarkerColor[2]));
+#endif
+    DrawRectangle(
+        xFunc(x_ - PointSize), yFunc(y_ - PointSize),
+        xFunc(x_ + PointSize), yFunc(y_ + PointSize));
 }
 
 void DescentEngine::search_start() {
@@ -33,13 +56,15 @@ void DescentEngine::search_start() {
     double ylen = YMax - YMin;
     double sx = 2 * xlen / Epsilon - 1;
     double sy = 2 * ylen / Epsilon - 1;
-    ddx = xlen / sx;
-    ddy = ylen / sy;
+    ddx_ = xlen / sx;
+    ddy_ = ylen / sy;
 
-    x = xold = xmin_ = xstart_;
-    y = yold = ymin_ = ystart_;
+    x_ = xold_ = xmin_ = xstart_;
+    y_ = yold_ = ymin_ = ystart_;
     zmin_ = func(xmin_, ymin_);
     count_ = 1;
+
+    search_over_ = false;
 }
 
 void DescentEngine::search_step() {
@@ -48,15 +73,15 @@ void DescentEngine::search_step() {
     }
 
     // Вычисление градиента в точке (x,y)
-    double partialX = dfdx(x, y);
-    double partialY = dfdy(x, y);
+    double partialX = dfdx(x_, y_);
+    double partialY = dfdy(x_, y_);
     count_ += 4;
 
     // Проверка условия выхода
     double partial = sqrt(partialX * partialX + partialY * partialY);
     if (partial < Epsilon) {
-        xold = xmin_;
-        yold = ymin_;
+        xold_ = xmin_;
+        yold_ = ymin_;
         search_over_ = true;
         return;
     }
@@ -66,17 +91,16 @@ void DescentEngine::search_step() {
     // if (abs(partialY)>abs(partialX) && currentVar!=2) currentVar = 2; // y
 
     // Установка начальных значений для сканирования
-    double dx = -ddx * signum(partialX);
-    double dy = -ddy * signum(partialY);
+    double dx = -ddx_ * signum(partialX);
+    double dy = -ddy_ * signum(partialY);
 
-    double x1, y1, z1, xmin1, ymin1, zmin1;
-    x1 = xmin1 = x;
-    y1 = ymin1 = y;
-    zmin1 = func(x1, y1);
+    double x1 = x_, xmin1 = x_;
+    double y1 = y_, ymin1 = y_;
+    double zmin1 = func(x1, y1);
 
     // Сканирование в направлении
     while (x1>=XMin && x1<=XMax && y1>=YMin && y1<=YMax) {
-        z1 = func(x1, y1);
+        double z1 = func(x1, y1);
         count_++;
 
         if (z1<zmin1) {
@@ -90,14 +114,14 @@ void DescentEngine::search_step() {
 
     // Сравнение полученного минимума в направлении с уже известным минимумом
     if (zmin1<zmin_) {
-        xold = xmin_;
-        yold = ymin_;
-        x = xmin_ = xmin1;
-        y = ymin_ = ymin1;
+        xold_ = xmin_;
+        yold_ = ymin_;
+        x_ = xmin_ = xmin1;
+        y_ = ymin_ = ymin1;
         zmin_ = zmin1;
     } else {
         // Изменение параметров поиска, если шаг неудачный
-        ddx *= -0.5;
-        ddy *= -0.5;
+        ddx_ *= -0.5;
+        ddy_ *= -0.5;
     }
 }

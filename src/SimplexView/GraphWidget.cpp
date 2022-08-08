@@ -244,7 +244,7 @@ void GraphWidget::draw_ticks() {
 
     for (size_t i = 0; i < ticksX_.size(); i += 2) {
         const auto& p1 = ticksX_[i];
-        const auto& p2 = ticksX_[i+1];
+        const auto& p2 = ticksX_[i + 1];
         fl_line(xFunc_(p1.X), yFunc_(p1.Y),
             xFunc_(p2.X), yFunc_(p2.Y));
     }
@@ -291,29 +291,24 @@ void GraphWidget::update_size() {
     pixelX_ = (XMax - XMin) / (this->w() - Margin * 2 - TickSize);
     pixelY_ = (YMax - YMin) / (this->h() - Margin * 2 - TickSize);
 
-    // Update ticks
-    float dTick{ 0.0f };
-
     /* Y Ticks */
     ticksY_.resize((TickCount + 1) * 2);
-    dTick = (YMax - YMin) / float(TickCount);
-    for (int i = 0; i <= TickCount; i++) {
-        float y = YMin + i * dTick;
+    float dTickY = (YMax - YMin) / static_cast<float>(TickCount);
+    for (size_t i = 0; i <= TickCount; i++) {
+        float y = YMin + static_cast<float>(i) * dTickY;
+        float tickScale = (i % 2) ? 0.5f : 1.0f;
         ticksY_[i * 2] = HMM_Vec2(XMin, y);
-
-        float tickScale = (i % 2) ? 0.5 : 1.0;
-        ticksY_[i * 2 + 1] = HMM_Vec2(XMin - float(TickSize) * pixelX_ * tickScale, y);
+        ticksY_[i * 2 + 1] = HMM_Vec2(XMin - static_cast<float>(TickSize) * pixelX_ * tickScale, y);
     }
 
     /* X Ticks */
     ticksX_.resize((TickCount + 1) * 2);
-    dTick = (XMax - XMin) / float(TickCount);
-    for (int i = 0; i <= TickCount; i++) {
-        float x = XMin + i * dTick;
-        ticksX_[i * 2] = HMM_Vec2(YMin, x);
-
-        float tickScale = (i % 2) ? 0.5 : 1.0;
-        ticksX_[i * 2 + 1] = HMM_Vec2(YMin - float(TickSize) * pixelY_ * tickScale, x);
+    float dTickX = (XMax - XMin) / static_cast<float>(TickCount);
+    for (size_t i = 0; i <= TickCount; i++) {
+        float x = XMin + static_cast<float>(i) * dTickX;
+        float tickScale = (i % 2) ? 0.5f : 1.0f;
+        ticksX_[i * 2] = HMM_Vec2(x, YMin);
+        ticksX_[i * 2 + 1] = HMM_Vec2(x, YMin - static_cast<float>(TickSize) * pixelY_ * tickScale);
     }
 
 #if DRAW_METHOD==DRAW_METHOD_FLTK
@@ -346,8 +341,8 @@ int GraphWidget::handle(int e) {
             if (x>=0 && x<=(this->w() - Margin * 2 - TickSize) &&
                 y>=0 && y<=(this->h() - Margin * 2 - TickSize)) {
 
-                float sx = XMin + x * pixelX_;
-                float sy = YMax - y * pixelY_;
+                float sx = XMin + static_cast<float>(x) * pixelX_;
+                float sy = YMax - static_cast<float>(y) * pixelY_;
                 if (engine_) {
                     engine_->set_start_point(sx, sy);
                 }
@@ -372,14 +367,14 @@ void GraphWidget::create_surface() {
 
     int rows = YDivCount + 1, cols = XDivCount + 1;
     float zmin = 0.0f, zmax = 0.0f;
-    float dx = (XMax - XMin) / float(cols);
-    float dy = (YMax - YMin) / float(rows);
+    float dx = (XMax - XMin) / static_cast<float>(cols);
+    float dy = (YMax - YMin) / static_cast<float>(rows);
     std::vector<float> points(rows * cols);
 
     for (int j=0; j<rows; j++) {
-        float y = YMin + j * dy;
+        float y = YMin + static_cast<float>(j) * dy;
         for (int i=0; i<cols; i++) {
-            float x = XMin + i * dx;
+            float x = XMin + static_cast<float>(i) * dx;
             float z = func(x, y);
             points[j * cols + i] = z;
             if (zmin>z) zmin = z;
@@ -387,10 +382,10 @@ void GraphWidget::create_surface() {
         }
     }
 
-    float dz = (sqrt(zmax) - sqrt(zmin)) / float (Palette.size());
+    float dz = (sqrt(zmax) - sqrt(zmin)) / static_cast<float>(Palette.size());
 
     for (size_t i=0; i < Palette.size(); i++) {
-        float z = sqrt(zmin) + float(i) * dz;
+        float z = sqrt(zmin) + static_cast<float>(i) * dz;
         contourLines_[i].init(points, cols, rows,
             XMin, YMin, XMax, YMax, z*z);
         contourFills_[i].init(points, cols, rows,

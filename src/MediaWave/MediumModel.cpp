@@ -5,8 +5,8 @@
 MediumModel::MediumModel(float l, int n)
     : N(n), L(l) {
     InitFunc(DefUNType, DefPNType);
-    InitCondL(INIT_COND_CLOSED);
-    InitCondR(INIT_COND_CLOSED);
+    InitCondL(ClosedBoundary);
+    InitCondR(ClosedBoundary);
 
     Init();
 }
@@ -16,14 +16,14 @@ void MediumModel::InitFunc(int un_type, int pn_type) {
     this->pn_type = pn_type;
 }
 
-void MediumModel::InitCondL(float b, float c) {
-    this->bl = b;
-    this->cl = c;
+void MediumModel::InitCondL(BoundaryCondition bc) {
+    this->bl = bc.b;
+    this->cl = bc.c;
 }
 
-void MediumModel::InitCondR(float b, float c) {
-    this->br = b;
-    this->cr = c;
+void MediumModel::InitCondR(BoundaryCondition bc) {
+    this->br = bc.b;
+    this->cr = bc.c;
 }
 
 void MediumModel::Init() {
@@ -120,6 +120,34 @@ void MediumModel::Step() {
 }
 
 float MediumModel::un(float x) {
+    auto un_lin = [=](float /*x*/) -> float {
+        return UN_0;
+    };
+    auto un1 = [=](float x) -> float {
+        if (x > init_left && x < init_right) return UN_0;
+        else return UN_1;
+    };
+    auto un2 = [=](float x) -> float {
+        if (x < init_left) return UN_1;
+        else return UN_0;
+    };
+    auto un3 = [=](float x) -> float {
+        if (x > init_left && x < init_right) return UN_1;
+        else return UN_0;
+    };
+    auto un4 = [=](float x) -> float {
+        if (x > init_right) return UN_1;
+        else return UN_0;
+    };
+    auto un5 = [=](float x) -> float {
+        if (x < L / 2) return -UN_1;
+        else return UN_1;
+    };
+    auto un6 = [=](float x) -> float {
+        if (x < L / 2) return UN_1;
+        else return -UN_1;
+    };
+
     switch (un_type) {
     case 0: return un_lin(x);
     case 1: return un1(x);
@@ -132,41 +160,27 @@ float MediumModel::un(float x) {
     }
 }
 
-float MediumModel::un_lin(float /*x*/) {
-    return UN_0;
-}
-
-float MediumModel::un1(float x) {
-    if (x > init_left && x < init_right) return UN_0;
-    else return UN_1;
-}
-
-float MediumModel::un2(float x) {
-    if (x < init_left) return UN_1;
-    else return UN_0;
-}
-
-float MediumModel::un3(float x) {
-    if (x > init_left && x < init_right) return UN_1;
-    else return UN_0;
-}
-
-float MediumModel::un4(float x) {
-    if (x > init_right) return UN_1;
-    else return UN_0;
-}
-
-float MediumModel::un5(float x) {
-    if (x < L / 2) return -UN_1;
-    else return UN_1;
-}
-
-float MediumModel::un6(float x) {
-    if (x < L / 2) return UN_1;
-    else return -UN_1;
-}
-
 float MediumModel::pn(float x) {
+    auto pn_lin = [=](float /*x*/) -> float {
+        return PN_0;
+    };
+    auto pn1 = [=](float x) -> float {
+        if (x > init_left && x < init_right) return PN_0;
+        else return PN_1;
+    };
+    auto pn2 = [=](float x) -> float {
+        if (x < init_left) return PN_1;
+        else return PN_0;
+    };
+    auto pn3 = [=](float x) -> float {
+        if (x > init_left && x < init_right) return PN_1;
+        else return PN_0;
+    };
+    auto pn4 = [=](float x) -> float {
+        if (x > init_right) return PN_1;
+        else return PN_0;
+    };
+
     switch (pn_type) {
     case 0: return pn_lin(x);
     case 1: return pn1(x);
@@ -175,28 +189,4 @@ float MediumModel::pn(float x) {
     case 4: return pn4(x);
     default: return pn_lin(x);
     }
-}
-
-float MediumModel::pn_lin(float /*x*/) {
-    return PN_0;
-}
-
-float MediumModel::pn1(float x) {
-    if (x > init_left && x < init_right) return PN_0;
-    else return PN_1;
-}
-
-float MediumModel::pn2(float x) {
-    if (x < init_left) return PN_1;
-    else return PN_0;
-}
-
-float MediumModel::pn3(float x) {
-    if (x > init_left && x < init_right) return PN_1;
-    else return PN_0;
-}
-
-float MediumModel::pn4(float x) {
-    if (x > init_right) return PN_1;
-    else return PN_0;
 }

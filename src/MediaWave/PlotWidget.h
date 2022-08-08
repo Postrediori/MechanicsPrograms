@@ -53,6 +53,8 @@ public:
     void ticks(int, int);
     void plot(int, const std::vector<float>&, const std::vector<float>&);
 
+    void bar_plot(bool b) { bar_plot_ = b; }
+
 private:
     void pixel_scale();
 
@@ -89,6 +91,8 @@ private:
     std::array<uint8_t, 4> axis_color;
     std::array<uint8_t, 4> plot_color;
     std::array<uint8_t, 4> text_color;
+
+    bool bar_plot_{ false };
 
 #if DRAW_METHOD==DRAW_METHOD_FLTK
     bool initOffscreen_{ false };

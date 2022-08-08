@@ -4,6 +4,8 @@
 #include "MediumModel.h"
 #include "MainWindow.h"
 
+constexpr size_t BufferLen = 32;
+
 MainWindow::MainWindow(MediumModel* model)
     : Fl_Window(700, 500, "MediaWave"), model_(model) {
     create_settings_wnd();
@@ -18,6 +20,9 @@ MainWindow::MainWindow(MediumModel* model)
     step_btn = new Fl_Button(550, 50, 90, 25, "Step");
     start_btn = new Fl_Button(550, 80, 90, 25, "Start");
     stop_btn = new Fl_Button(550, 110, 90, 25, "Stop");
+
+    bar_plot_check = new Fl_Check_Button(550, 140, 90, 25, "Bar Plot");
+    bar_plot_check->callback(switch_bar_plot_cb, this);
 
     this->end();
 
@@ -75,15 +80,27 @@ void MainWindow::helper(SettingsHelper h) {
     model_->InitFunc(helper_.un_type, helper_.pn_type);
 
     switch (helper_.left_side_type) {
-    case SideType::Closed: model_->InitCondL(INIT_COND_CLOSED); break;
-    case SideType::Open: model_->InitCondL(INIT_COND_OPENED); break;
-    case SideType::Manual: model_->InitCondL(helper_.bl, helper_.cl); break;
+    case SideType::Closed:
+        model_->InitCondL(ClosedBoundary);
+        break;
+    case SideType::Open:
+        model_->InitCondL(OpenBoundary);
+        break;
+    case SideType::Manual:
+        model_->InitCondL({ helper_.bl, helper_.cl });
+        break;
     }
 
     switch (helper_.right_side_type) {
-    case SideType::Closed: model_->InitCondR(INIT_COND_CLOSED); break;
-    case SideType::Open: model_->InitCondR(INIT_COND_OPENED); break;
-    case SideType::Manual: model_->InitCondL(helper_.br, helper_.cr); break;
+    case SideType::Closed:
+        model_->InitCondR(ClosedBoundary);
+        break;
+    case SideType::Open:
+        model_->InitCondR(OpenBoundary);
+        break;
+    case SideType::Manual:
+        model_->InitCondR({ helper_.br, helper_.cr });
+        break;
     }
 
     uw->view_range(0.0, model_->L, -2.0, 2.0);
@@ -200,7 +217,8 @@ void MainWindow::set_tree_icons(Fl_Tree* t) {
 
 void MainWindow::select_side_type(Fl_Tree* t, SideType type) {
     for (Fl_Tree_Item* item = t->first(); item; item = item->next()) {
-        if (item->user_data() == (void*)(type)) {
+        auto itemType = static_cast<SideType>(reinterpret_cast<uintptr_t>(item->user_data()));
+        if (itemType == type) {
             t->select_only(item);
             return;
         }
@@ -267,31 +285,31 @@ void MainWindow::create_settings_wnd() {
 }
 
 void MainWindow::set_inputs(SettingsHelper helper) {
-    static char str[30];
+    char str[BufferLen] = { 0 };
 
     u_choice->value(helper.un_type);
     p_choice->value(helper.pn_type);
     set_lcond_inputs(helper);
     set_rcond_inputs(helper);
 
-    sprintf(str, "%.4f", helper.L);
+    snprintf(str, BufferLen, "%.4f", helper.L);
     len_in->value(str);
 
-    sprintf(str, "%d", helper.N);
+    snprintf(str, BufferLen, "%d", helper.N);
     n_in->value(str);
 
-    sprintf(str, "%.4f", helper.a);
+    snprintf(str, BufferLen, "%.4f", helper.a);
     a_in->value(str);
 
-    sprintf(str, "%.4f", helper.rho);
+    snprintf(str, BufferLen, "%.4f", helper.rho);
     rho_in->value(str);
 
-    sprintf(str, "%.4f", helper.sigma);
+    snprintf(str, BufferLen, "%.4f", helper.sigma);
     sigma_in->value(str);
 }
 
 SettingsHelper MainWindow::get_inputs() {
-    static char str[30];
+    char str[BufferLen] = { 0 };
     SettingsHelper helper;
 
     helper.un_type = u_choice->value();
@@ -299,45 +317,45 @@ SettingsHelper MainWindow::get_inputs() {
     get_lcond_inputs(helper);
     get_rcond_inputs(helper);
 
-    strcpy(str, len_in->value());
+    strncpy(str, len_in->value(), BufferLen);
     helper.L = atof(str);
 
-    strcpy(str, n_in->value());
+    strncpy(str, n_in->value(), BufferLen);
     helper.N = atoi(str);
 
-    strcpy(str, a_in->value());
+    strncpy(str, a_in->value(), BufferLen);
     helper.a = atof(str);
 
-    strcpy(str, rho_in->value());
+    strncpy(str, rho_in->value(), BufferLen);
     helper.rho = atof(str);
 
-    strcpy(str, sigma_in->value());
+    strncpy(str, sigma_in->value(), BufferLen);
     helper.sigma = atof(str);
 
     return helper;
 }
 
 void MainWindow::set_lcond_inputs(SettingsHelper helper) {
-    static char str[30];
+    char str[BufferLen] = { 0 };
     select_side_type(left_side_choice, helper.left_side_type);
 
-    sprintf(str, "%.1f", helper.bl);
+    snprintf(str, BufferLen, "%.1f", helper.bl);
     bl_in->value(str);
 
-    sprintf(str, "%.1f", helper.cl);
+    snprintf(str, BufferLen, "%.1f", helper.cl);
     cl_in->value(str);
 }
 
 void MainWindow::get_lcond_inputs(SettingsHelper& helper) {
-    static char str[30];
+    char str[BufferLen] = { 0 };
     Fl_Tree_Item* item = left_side_choice->first_selected_item();
     helper.left_side_type = static_cast<SideType>(reinterpret_cast<uintptr_t>(item->user_data()));
 
     if (helper.left_side_type == SideType::Manual) {
-        strcpy(str, bl_in->value());
+        strncpy(str, bl_in->value(), BufferLen);
         helper.bl = atof(str);
 
-        strcpy(str, cl_in->value());
+        strncpy(str, cl_in->value(), BufferLen);
         helper.cl = atof(str);
 
     }
@@ -353,26 +371,26 @@ void MainWindow::get_lcond_inputs(SettingsHelper& helper) {
 }
 
 void MainWindow::set_rcond_inputs(SettingsHelper helper) {
-    static char str[30];
+    char str[BufferLen] = { 0 };
     select_side_type(right_side_choice, helper.right_side_type);
 
-    sprintf(str, "%.1f", helper.br);
+    snprintf(str, BufferLen, "%.1f", helper.br);
     br_in->value(str);
 
-    sprintf(str, "%.1f", helper.cr);
+    snprintf(str, BufferLen, "%.1f", helper.cr);
     cr_in->value(str);
 }
 
 void MainWindow::get_rcond_inputs(SettingsHelper& helper) {
-    static char str[30];
+    char str[BufferLen] = { 0 };
     Fl_Tree_Item* item = right_side_choice->first_selected_item();
     helper.right_side_type = static_cast<SideType>(reinterpret_cast<uintptr_t>(item->user_data()));
 
     if (helper.right_side_type == SideType::Manual) {
-        strcpy(str, br_in->value());
+        strncpy(str, br_in->value(), BufferLen);
         helper.br = atof(str);
 
-        strcpy(str, cr_in->value());
+        strncpy(str, cr_in->value(), BufferLen);
         helper.cr = atof(str);
 
     }
@@ -388,7 +406,7 @@ void MainWindow::get_rcond_inputs(SettingsHelper& helper) {
 }
 
 void MainWindow::close_cb_st(Fl_Widget*, void* v) {
-    MainWindow* w = (MainWindow*)v;
+    auto w = static_cast<MainWindow*>(v);
     w->close_cb();
 }
 
@@ -407,7 +425,7 @@ void MainWindow::apply_cb() {
 }
 
 void MainWindow::left_side_cb_st(Fl_Widget*, void* v) {
-    MainWindow* w = (MainWindow*)v;
+    auto w = static_cast<MainWindow*>(v);
     w->left_side_cb();
 }
 
@@ -427,7 +445,7 @@ void MainWindow::left_side_cb() {
 }
 
 void MainWindow::right_side_cb_st(Fl_Widget*, void* v) {
-    MainWindow* w = (MainWindow*)v;
+    auto w = static_cast<MainWindow*>(v);
     w->right_side_cb();
 }
 
@@ -444,4 +462,19 @@ void MainWindow::right_side_cb() {
         br_in->hide();
         cr_in->hide();
     }
+}
+
+void MainWindow::switch_bar_plot_cb(Fl_Widget*, void* v) {
+    auto w = static_cast<MainWindow*>(v);
+    w->switch_bar_plot();
+}
+
+void MainWindow::switch_bar_plot() {
+    bar_plot_ = !bar_plot_;
+
+    uw->bar_plot(bar_plot_);
+    uw->redraw();
+
+    pw->bar_plot(bar_plot_);
+    pw->redraw();
 }

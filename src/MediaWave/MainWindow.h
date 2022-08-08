@@ -74,6 +74,9 @@ private:
     static void right_side_cb_st(Fl_Widget*, void*);
     void right_side_cb();
 
+    static void switch_bar_plot_cb(Fl_Widget* w, void* p);
+    void switch_bar_plot();
+
     void set_inputs(SettingsHelper);
     SettingsHelper get_inputs();
 
@@ -84,6 +87,8 @@ private:
     void get_rcond_inputs(SettingsHelper& helper);
 
 private:
+    bool bar_plot_{ false };
+
     MediumModel *model_{ nullptr };
 
     PlotWidget* uw{ nullptr };
@@ -104,4 +109,5 @@ private:
     Fl_Choice* u_choice{ nullptr }, * p_choice{ nullptr };
     Fl_Tree* left_side_choice{ nullptr }, * right_side_choice{ nullptr };
     Fl_Input* bl_in{ nullptr }, * cl_in{ nullptr }, * br_in{ nullptr }, * cr_in{ nullptr };
+    Fl_Check_Button* bar_plot_check{ nullptr };
 };

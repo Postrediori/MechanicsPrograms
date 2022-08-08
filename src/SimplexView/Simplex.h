@@ -14,12 +14,12 @@ struct Simplex {
     int getMaxNode() const;
     int getMinNode() const;
     float getSize() const;
-    vec4 getMinPoint() const;
+    hmm_vec4 getMinPoint() const;
 
-    static bool compare_points(vec4 a, vec4 b) {
-        return a.z < b.z;
+    static bool compare_points(hmm_vec4 a, hmm_vec4 b) {
+        return a.Z < b.Z;
     }
 
-    std::array<vec4, SimplexOrder> points;
+    std::array<hmm_vec4, SimplexOrder> points;
     int max_node{ -1 };
 };

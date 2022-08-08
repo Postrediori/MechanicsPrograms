@@ -33,7 +33,8 @@ macro(make_project_options_)
             -Wall -Wextra -Wpedantic -Wno-missing-field-initializers)
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         target_compile_options(${PROJECT} PRIVATE
-            -Wall -Wextra -Wpedantic -Wno-missing-field-initializers)
+            -Wall -Wextra -Wpedantic
+            -Wno-gnu-anonymous-struct -Wno-nested-anon-types -Wno-missing-field-initializers -Wno-missing-braces)
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         target_compile_options(${PROJECT} PRIVATE /Wall)
         target_compile_definitions(${PROJECT} PRIVATE _USE_MATH_DEFINES)

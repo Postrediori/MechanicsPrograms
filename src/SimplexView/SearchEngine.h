@@ -5,7 +5,7 @@ public:
     SearchEngine() = default;
     virtual ~SearchEngine() { };
 
-    virtual void draw(CoordinateFunc xFunc, CoordinateFunc yFunc) { }
+    virtual void draw(CoordinateFunc /*xFunc*/, CoordinateFunc /*yFunc*/) { }
     virtual void search_start() { }
     virtual void search_step() { }
 

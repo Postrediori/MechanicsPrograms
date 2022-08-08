@@ -68,7 +68,6 @@ private:
     WaveModel* model_{ nullptr };
 
     double pixelX_{ 0.0 }, pixelY_{ 0.0 };
-    double stepX_{ 0.0 }, stepY_{ 0.0 };
 
     std::vector<Point2d> ticksX;
     std::vector<Point2d> ticksY;

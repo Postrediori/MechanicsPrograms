@@ -16,14 +16,14 @@ void DrawSimplex(CoordinateFunc xFunc, CoordinateFunc yFunc,
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
     glBegin(GL_LINE_LOOP);
     for (const auto& p : s.points) {
-        glVertex2f(xFunc(p.x), yFunc(p.y));
+        glVertex2f(xFunc(p.X), yFunc(p.Y));
     }
-    glVertex2f(xFunc(s.points[0].x), yFunc(s.points[0].y));
+    glVertex2f(xFunc(s.points[0].X), yFunc(s.points[0].Y));
     glEnd();
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_begin_loop();
     for (const auto& p : s.points) {
-        fl_vertex(xFunc(p.x), yFunc(p.y));
+        fl_vertex(xFunc(p.X), yFunc(p.Y));
     }
     fl_end_loop();
 #endif
@@ -60,10 +60,10 @@ void SimplexEngine::draw(CoordinateFunc xFunc, CoordinateFunc yFunc) {
         fl_color(fl_rgb_color(nodeColor[0], nodeColor[1], nodeColor[2]));
 #endif
         constexpr double PointSize = 0.05;
-        DrawRectangle(xFunc(simplex_.points[i].x - PointSize),
-                      yFunc(simplex_.points[i].y - PointSize),
-                      xFunc(simplex_.points[i].x + PointSize),
-                      yFunc(simplex_.points[i].y + PointSize));
+        DrawRectangle(xFunc(simplex_.points[i].X - PointSize),
+                      yFunc(simplex_.points[i].Y - PointSize),
+                      xFunc(simplex_.points[i].X + PointSize),
+                      yFunc(simplex_.points[i].Y + PointSize));
     }
 }
 
@@ -104,8 +104,8 @@ void SimplexEngine::search_step() {
 }
 
 void SimplexEngine::update_min() {
-    vec4 pt = simplex_.getMinPoint();
-    xmin_ = pt.x;
-    ymin_ = pt.y;
-    zmin_ = pt.z;
+    hmm_vec4 pt = simplex_.getMinPoint();
+    xmin_ = pt.X;
+    ymin_ = pt.Y;
+    zmin_ = pt.Z;
 }

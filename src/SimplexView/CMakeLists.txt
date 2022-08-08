@@ -5,8 +5,8 @@ target_precompile_headers(${PROJECT} PUBLIC
 
 target_link_libraries(${PROJECT}
     ${OPENGL_LIBRARIES}
-    ${FLTK_BASE_LIBRARY}
-    ${FLTK_GL_LIBRARY}
+    ${FLTK_LIBRARIES}
+    ${HMM_LIBRARY}
     )
 
 target_include_directories(${PROJECT} PUBLIC

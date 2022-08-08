@@ -54,10 +54,10 @@ GraphWidget::GraphWidget(int X, int Y, int W, int H, SearchEngine* e, const char
     using namespace PlotParams;
 
     boundingBox_ = {
-        vec2(XMin, YMin),
-        vec2(XMax, YMin),
-        vec2(XMax, YMax),
-        vec2(XMin, YMax)
+        HMM_Vec2(XMin, YMin),
+        HMM_Vec2(XMax, YMin),
+        HMM_Vec2(XMax, YMax),
+        HMM_Vec2(XMin, YMax)
     };
 
     xFunc_ = [=](double x) -> double {
@@ -172,7 +172,7 @@ void GraphWidget::draw() {
 }
 
 void GraphWidget::draw_contour_plot() {
-    for (int i = 0; i < Palette.size(); i++) {
+    for (size_t i = 0; i < Palette.size(); i++) {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
         glColor4ubv(Palette[i].data());
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
@@ -214,7 +214,7 @@ void GraphWidget::draw_box() {
 
     fl_begin_loop();
     for (const auto& p : boundingBox_) {
-        fl_vertex(xFunc_(p.x), yFunc_(p.y));
+        fl_vertex(xFunc_(p.X), yFunc_(p.Y));
     }
     fl_end_loop();
 #endif
@@ -245,15 +245,15 @@ void GraphWidget::draw_ticks() {
     for (size_t i = 0; i < ticksX_.size(); i += 2) {
         const auto& p1 = ticksX_[i];
         const auto& p2 = ticksX_[i+1];
-        fl_line(xFunc_(p1.x), yFunc_(p1.y),
-            xFunc_(p2.x), yFunc_(p2.y));
+        fl_line(xFunc_(p1.X), yFunc_(p1.Y),
+            xFunc_(p2.X), yFunc_(p2.Y));
     }
 
     for (size_t i = 0; i < ticksY_.size(); i += 2) {
         const auto& p1 = ticksY_[i];
         const auto& p2 = ticksY_[i + 1];
-        fl_line(xFunc_(p1.x), yFunc_(p1.y),
-            xFunc_(p2.x), yFunc_(p2.y));
+        fl_line(xFunc_(p1.X), yFunc_(p1.Y),
+            xFunc_(p2.X), yFunc_(p2.Y));
     }
 #endif
 }
@@ -299,12 +299,10 @@ void GraphWidget::update_size() {
     dTick = (YMax - YMin) / float(TickCount);
     for (int i = 0; i <= TickCount; i++) {
         float y = YMin + i * dTick;
-        ticksY_[i * 2].x = XMin;
-        ticksY_[i * 2].y = y;
+        ticksY_[i * 2] = HMM_Vec2(XMin, y);
 
         float tickScale = (i % 2) ? 0.5 : 1.0;
-        ticksY_[i * 2 + 1].x = XMin - float(TickSize) * pixelX_ * tickScale;
-        ticksY_[i * 2 + 1].y = y;
+        ticksY_[i * 2 + 1] = HMM_Vec2(XMin - float(TickSize) * pixelX_ * tickScale, y);
     }
 
     /* X Ticks */
@@ -312,12 +310,10 @@ void GraphWidget::update_size() {
     dTick = (XMax - XMin) / float(TickCount);
     for (int i = 0; i <= TickCount; i++) {
         float x = XMin + i * dTick;
-        ticksX_[i * 2].y = YMin;
-        ticksX_[i * 2].x = x;
+        ticksX_[i * 2] = HMM_Vec2(YMin, x);
 
         float tickScale = (i % 2) ? 0.5 : 1.0;
-        ticksX_[i * 2 + 1].y = YMin - float(TickSize) * pixelY_ * tickScale;
-        ticksX_[i * 2 + 1].x = x;
+        ticksX_[i * 2 + 1] = HMM_Vec2(YMin - float(TickSize) * pixelY_ * tickScale, x);
     }
 
 #if DRAW_METHOD==DRAW_METHOD_FLTK
@@ -393,7 +389,7 @@ void GraphWidget::create_surface() {
 
     float dz = (sqrt(zmax) - sqrt(zmin)) / float (Palette.size());
 
-    for (int i=0; i< Palette.size(); i++) {
+    for (size_t i=0; i < Palette.size(); i++) {
         float z = sqrt(zmin) + float(i) * dz;
         contourLines_[i].init(points, cols, rows,
             XMin, YMin, XMax, YMax, z*z);

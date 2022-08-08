@@ -6,7 +6,7 @@ public:
 
     void refresh();
 
-    void engine(int idx);
+    void engine(size_t idx);
     void search_start();
     void search_step();
     bool search_over();
@@ -18,7 +18,7 @@ public:
 
 private:
     std::vector<std::tuple<std::string, std::unique_ptr<SearchEngine>>> engines_;
-    int current_engine_{ 0 };
+    size_t current_engine_{ 0 };
 
     GraphWidget* graph_{ nullptr };
     Fl_Text_Buffer* buffer_{ nullptr };

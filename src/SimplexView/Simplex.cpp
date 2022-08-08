@@ -4,17 +4,18 @@
 #include "Simplex.h"
 
 void Simplex::set(float x1, float y1, float x2, float y2, float x3, float y3) {
-    points[0] = { x1, y1, static_cast<float>(func(x1, y1)), 0.0f };
-    points[1] = { x2, y2, static_cast<float>(func(x2, y2)), 0.0f };
-    points[2] = { x3, y3, static_cast<float>(func(x3, y3)), 0.0f };
+    points[0] = HMM_Vec4(x1, y1, func(x1, y1), 0);
+    points[1] = HMM_Vec4(x2, y2, func(x2, y2), 0);
+    points[2] = HMM_Vec4(x3, y3, func(x3, y3), 0);
     max_node = -1;
 }
 
 void Simplex::setTriangle(float size, float x, float y) {
+    hmm_vec2 p0 = HMM_Vec2(x, y);
     for (int i=0; i<SimplexOrder; i++) {
         double angle = i * 2 * M_PI / SimplexOrder;
-        points[i].x = x + size * cos(angle);
-        points[i].y = y + size * sin(angle);
+        hmm_vec2 p = p0 + HMM_Vec2(cos(angle), sin(angle)) * size;
+        points[i] = HMM_Vec4(p.X, p.Y, 0, 0);
     }
     max_node = -1;
 }
@@ -31,46 +32,42 @@ int Simplex::getMinNode() const {
 
 float Simplex::getSize() const {
     float sum = 0.f;
-    for (int i=0; i<points.size(); i++) {
-        float dx = points[i].x - points[(i + 1) % points.size()].x;
-        float dy = points[i].y - points[(i + 1) % points.size()].y;
-        sum += sqrt(dx * dx + dy * dy);
+    for (size_t i = 0; i<points.size(); i++) {
+        size_t j = (i + 1) % points.size();
+        hmm_vec2 d = points[i].XY - points[j].XY;
+        sum += HMM_LengthVec2(d);
     }
-    sum /= float(points.size());
+    sum /= static_cast<float>(points.size());
     return sum;
 }
 
-vec4 Simplex::getMinPoint() const {
+hmm_vec4 Simplex::getMinPoint() const {
     return points.at(getMinNode());
 }
 
 void Simplex::flip(int node) {
-    vec4 pt;
-    for (const auto& p : points) {
-        pt.x += p.x;
-        pt.y += p.y;
+    if (node == -1) {
+        return;
     }
-    pt.x *= 2.f / (points.size() - 1.f);
-    pt.y *= 2.f / (points.size() - 1.f);
-    pt.x -= points[node].x * (points.size() + 1.f) / (points.size() - 1.f);
-    pt.y -= points[node].y * (points.size() + 1.f) / (points.size() - 1.f);
-    pt.z = func(pt.x, pt.y);
-    points[node] = pt;
+    hmm_vec2 pt = HMM_Vec2(0, 0);
+    for (const auto& p : points) {
+        pt += p.XY;
+    }
+    pt *= 2.0 / (points.size() - 1.0);
+    pt -= points[node].XY * (points.size() + 1.0) / (points.size() - 1.0);
+    points[node] = HMM_Vec4(pt.X, pt.Y, func(pt.X, pt.Y), 0);
 }
 
 void Simplex::reduce(int node) {
-    vec4 pt;
-    for (int i=0; i < points.size(); i++) {
-        if (i == node) {
+    if (node == -1) {
+        return;
+    }
+    for (size_t i=0; i < points.size(); i++) {
+        if (static_cast<int>(i) == node) {
             continue;
         }
-        pt = {
-            (points[i].x + points[node].x) / 2.f,
-            (points[i].y + points[node].y) / 2.f,
-            static_cast<float>(func(pt.x, pt.y)),
-            0.0f
-        };
-        points[i] = pt;
+        hmm_vec2 pt = (points[i].XY + points[node].XY) / 2.0;
+        points[i] = HMM_Vec4(pt.X, pt.Y, func(pt.X, pt.Y), 0);
     }
     max_node = -1;
 }

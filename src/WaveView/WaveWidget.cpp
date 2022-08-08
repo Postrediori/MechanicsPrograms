@@ -10,7 +10,7 @@ const ByteColor AxesColor = { 128, 128, 128, 255 };
 const ByteColor TicksColor = { 64, 64, 64, 255 };
 const ByteColor ModelLinesColor = { 0, 0, 0, 255 };
 const ByteColor ModelPointsColor = { 0, 0, 0, 255 }; // {128, 192, 255, 255};
-const ByteColor TextColor = { 0, 0, 0, 255 };
+const ByteColor LegendTextColor = { 0, 0, 0, 255 };
 
 struct Gradient {
     ByteColor colorMin;
@@ -348,6 +348,8 @@ void WaveWidget::draw_legend() {
 #else
     auto headerFont = reinterpret_cast<void*>(18);
     auto textFont = reinterpret_cast<void*>(14);
+
+    fl_color(fl_rgb_color(LegendTextColor[0], LegendTextColor[1], LegendTextColor[2]));
 #endif
 
     // Draw widget label

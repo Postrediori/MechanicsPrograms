@@ -12,7 +12,7 @@ public:
         float /*xmin*/, float /*ymin*/, float /*xmax*/, float /*ymax*/,
         float /*threshold*/
     ) { return true; }
-    virtual void render(CoordinateFunc xFunc, CoordinateFunc yFunc) const { }
+    virtual void render(CoordinateFunc /*xFunc*/, CoordinateFunc /*yFunc*/) const { }
 
     void resize(int w, int h) { w_ = w; h_ = h; }
 
@@ -37,7 +37,7 @@ public:
     void render(CoordinateFunc xFunc, CoordinateFunc yFunc) const override;
 
 private:
-    std::vector<vec2> lines;
+    std::vector<hmm_vec2> lines;
 };
 
 // ----------------------------------------------------------------------------
@@ -54,5 +54,5 @@ public:
     void render(CoordinateFunc xFunc, CoordinateFunc yFunc) const override;
 
 private:
-    std::vector<vec2> triangles;
+    std::vector<hmm_vec2> triangles;
 };

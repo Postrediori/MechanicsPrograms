@@ -43,7 +43,7 @@ MainWindow::MainWindow(int w, int h, const char* title)
     search_engines->box(FL_SHADOW_BOX);
     search_engines->begin();
 
-    for (int i = 0; i < engines_.size(); i++) {
+    for (size_t i = 0; i < engines_.size(); i++) {
         auto engine_btn = new Fl_Round_Button(
             510, 260 + 30 * i,
             175, 23,
@@ -103,8 +103,8 @@ bool MainWindow::search_over() {
     return std::get<1>(engines_.at(current_engine_))->search_over();
 }
 
-void MainWindow::engine(int idx) {
-    if (idx < 0 || idx >= engines_.size()) {
+void MainWindow::engine(size_t idx) {
+    if (idx >= engines_.size()) {
         std::cerr << "Error: Incorrect engine ID " << idx << std::endl;
         return;
     }

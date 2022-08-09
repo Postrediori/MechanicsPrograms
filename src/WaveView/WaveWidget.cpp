@@ -66,6 +66,25 @@ void WaveWidget::resize(int x, int y, int w, int h) {
     update_size();
 }
 
+void WaveWidget::screenshot(const std::string& fileName) const {
+    constexpr int ScreenCaptureBpp = 3;
+    int width(w()), height(h());
+    std::vector<uint8_t> pixels(width * height * ScreenCaptureBpp);
+
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    constexpr GLenum ScreenCaptureFormat = GL_RGB;
+    glReadPixels(0, 0, width, height, ScreenCaptureFormat, GL_UNSIGNED_BYTE, pixels.data());
+    stbi_flip_vertically_on_write(1);
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    fl_begin_offscreen(offscreen_);
+    fl_read_image(static_cast<uchar*>(pixels.data()), 0, 0, width, height);
+    fl_end_offscreen();
+#endif
+
+    int stride = width * ScreenCaptureBpp;
+    stbi_write_png(fileName.c_str(), width, height, ScreenCaptureBpp, pixels.data(), stride);
+}
+
 void WaveWidget::draw() {
     using namespace PlotDefaults;
 

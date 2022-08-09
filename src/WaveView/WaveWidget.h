@@ -47,9 +47,12 @@ public:
 
     void resize(int x, int y, int w, int h) override;
 
-private:
+    void screenshot(const std::string& fileName) const;
+
+protected:
     void draw() override;
 
+private:
     void draw_heatmap();
     void draw_box();
     void draw_axes();

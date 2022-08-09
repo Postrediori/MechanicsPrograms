@@ -1,3 +1,8 @@
+#ifndef STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#endif
+#include <stb_image_write.h>
+
 #include "pch.h"
 #include "SurfaceFunction.h"
 #include "WaveModel.h"

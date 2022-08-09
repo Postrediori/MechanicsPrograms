@@ -11,11 +11,16 @@
 #include <FL/Fl_Gl_Window.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Choice.H>
+#include <FL/Fl_Check_Button.H>
 
 #include <array>
 #include <cstdio>
 #include <cstdarg>
 #include <cmath>
 #include <functional>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <vector>
+
+#include <stb_image_write.h>

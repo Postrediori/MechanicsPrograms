@@ -6,6 +6,7 @@ target_precompile_headers(${PROJECT} PUBLIC
 target_link_libraries(${PROJECT}
     ${OPENGL_LIBRARIES}
     ${FLTK_LIBRARIES}
+    ${STB_LIBRARY}
     )
 
 target_include_directories(${PROJECT} PUBLIC

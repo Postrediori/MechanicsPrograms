@@ -87,7 +87,7 @@ private:
     void get_rcond_inputs(SettingsHelper& helper);
 
 private:
-    bool bar_plot_{ false };
+    bool bar_plot_{ true };
 
     MediumModel *model_{ nullptr };
 

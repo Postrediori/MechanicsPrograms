@@ -24,6 +24,11 @@ MainWindow::MainWindow(MediumModel* model)
     bar_plot_check = new Fl_Check_Button(550, 140, 90, 25, "Bar Plot");
     bar_plot_check->callback(switch_bar_plot_cb, this);
 
+    bar_plot_check->value(bar_plot_);
+
+    uw->bar_plot(bar_plot_);
+    pw->bar_plot(bar_plot_);
+
     this->end();
 
     step_btn->callback(step_cb_st, this);
@@ -121,7 +126,7 @@ SettingsHelper MainWindow::helper() {
 }
 
 void MainWindow::step_cb_st(Fl_Widget*, void* v) {
-    MainWindow* w = static_cast<MainWindow*>(v);
+    auto w = static_cast<MainWindow*>(v);
     w->step_cb();
 }
 
@@ -131,7 +136,7 @@ void MainWindow::step_cb() {
 }
 
 void MainWindow::start_cb_st(Fl_Widget*, void* v) {
-    MainWindow* w = static_cast<MainWindow*>(v);
+    auto w = static_cast<MainWindow*>(v);
     w->start_cb();
 }
 
@@ -145,7 +150,7 @@ void MainWindow::start_cb() {
 }
 
 void MainWindow::stop_cb_st(Fl_Widget*, void* v) {
-    MainWindow* w = static_cast<MainWindow*>(v);
+    auto w = static_cast<MainWindow*>(v);
     w->stop_cb();
 }
 
@@ -159,7 +164,7 @@ void MainWindow::stop_cb() {
 }
 
 void MainWindow::settings_cb_st(Fl_Widget*, void* v) {
-    MainWindow* w = static_cast<MainWindow*>(v);
+    auto w = static_cast<MainWindow*>(v);
     w->settings_cb();
 }
 
@@ -169,7 +174,7 @@ void MainWindow::settings_cb() {
 }
 
 void MainWindow::timer_cb_st(void* v) {
-    MainWindow* w = static_cast<MainWindow*>(v);
+    auto w = static_cast<MainWindow*>(v);
     w->timer_cb();
 }
 
@@ -395,13 +400,13 @@ void MainWindow::get_rcond_inputs(SettingsHelper& helper) {
 
     }
     else if (helper.right_side_type == SideType::Closed) {
-        helper.cr = 0.0;
-        helper.br = 1.0;
+        helper.cr = ClosedBoundary.c;
+        helper.br = ClosedBoundary.b;
 
     }
     else if (helper.right_side_type == SideType::Open) {
-        helper.cr = 0.0;
-        helper.br = 1.0;
+        helper.cr = OpenBoundary.c;
+        helper.br = OpenBoundary.b;
     }
 }
 

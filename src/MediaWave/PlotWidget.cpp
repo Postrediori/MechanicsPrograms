@@ -292,25 +292,58 @@ void PlotWidget::draw_heatmap() {
 
             glColor4ubv(Palette[k].data());
 
-            glVertex2f(points[i * 2].x, ymin_);
-            glVertex2f(points[i * 2 + 1].x, ymin_);
-            glVertex2f(points[i * 2 + 1].x, ymax_);
-            glVertex2f(points[i * 2].x, ymax_);
+            glVertex2f(points[i * 2].x, bar_plot_ ? 0 : ymin_);
+            glVertex2f(points[i * 2 + 1].x, bar_plot_ ? 0 : ymin_);
+            glVertex2f(points[i * 2 + 1].x, bar_plot_ ? y : ymax_);
+            glVertex2f(points[i * 2].x, bar_plot_ ? y : ymax_);
         }
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-        for (int i = 0; i < point_count_; i++) {
-            double y = points[i * 2].y;
-            double t = 1. - (y - ymin_) / (ymax_ - ymin_);
-            size_t k = static_cast<size_t>((static_cast<double>(Palette.size()) * t)) % Palette.size();
+        if (bar_plot_) {
+            for (int i = 0; i < point_count_; i++) {
+                double y = points[i * 2].y;
+                double t = 1. - (y - ymin_) / (ymax_ - ymin_);
+                size_t k = static_cast<size_t>((static_cast<double>(Palette.size()) * t)) % Palette.size();
 
-            fl_color(fl_rgb_color(Palette[k][0], Palette[k][1], Palette[k][2]));
+                fl_color(fl_rgb_color(Palette[k][0], Palette[k][1], Palette[k][2]));
 
-            fl_polygon(
-                get_x(points[i * 2].x), get_y(bar_plot_ ? 0 : ymin_),
-                get_x(points[i * 2 + 1].x), get_y(bar_plot_ ? 0 : ymin_),
-                get_x(points[i * 2 + 1].x), get_y(bar_plot_ ? y : ymax_),
-                get_x(points[i * 2].x), get_y(bar_plot_ ? y : ymax_)
-            );
+                fl_polygon(
+                    get_x(points[i * 2].x), get_y(bar_plot_ ? 0 : ymin_),
+                    get_x(points[i * 2 + 1].x), get_y(bar_plot_ ? 0 : ymin_),
+                    get_x(points[i * 2 + 1].x), get_y(bar_plot_ ? y : ymax_),
+                    get_x(points[i * 2].x), get_y(bar_plot_ ? y : ymax_)
+                );
+            }
+        }
+        else {
+            size_t kPrev{ 0 };
+            int j{ 0 };
+
+            for (int i = 0; i <= point_count_; i++) {
+                double y = points[i * 2].y;
+                double t = 1. - (y - ymin_) / (ymax_ - ymin_);
+                size_t k = static_cast<size_t>((static_cast<double>(Palette.size()) * t)) % Palette.size();
+                if (i == 0) {
+                    kPrev = k;
+                    continue;
+                }
+
+                if (k != kPrev || (i == point_count_)) {
+                    // Level changed, draw new part of heatmap
+
+                    fl_color(fl_rgb_color(Palette[kPrev][0], Palette[kPrev][1], Palette[kPrev][2]));
+                    fl_polygon(
+                        get_x(points[j * 2].x), get_y(ymin_),
+                        get_x(points[(i - 1) * 2 + 1].x), get_y(ymin_),
+                        get_x(points[(i - 1) * 2 + 1].x), get_y(ymax_),
+                        get_x(points[j * 2].x), get_y(ymax_)
+                    );
+
+                    // Mark start of the next heatmap part
+                    j = i;
+                }
+
+                kPrev = k;
+            }
         }
 #endif
     }

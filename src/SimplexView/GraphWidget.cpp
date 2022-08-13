@@ -60,21 +60,21 @@ GraphWidget::GraphWidget(int X, int Y, int W, int H, SearchEngine* e, const char
         HMM_Vec2(XMin, YMax)
     };
 
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
     xFunc_ = [=](double x) -> double {
-#if DRAW_METHOD==DRAW_METHOD_OPENGL
         return x;
-#elif DRAW_METHOD==DRAW_METHOD_FLTK
-        return (x - XMin) / this->pixelX_ + Margin + TickSize;
-#endif
     };
-
-    yFunc_ = [=](double y) {
-#if DRAW_METHOD==DRAW_METHOD_OPENGL
+    yFunc_ = [=](double y) -> double {
         return y;
-#elif DRAW_METHOD==DRAW_METHOD_FLTK
-        return (YMax - y) / this->pixelY_ + Margin;
-#endif
     };
+#elif DRAW_METHOD==DRAW_METHOD_FLTK
+    xFunc_ = [=](double x) -> double {
+        return (x - XMin) / this->pixelX_ + Margin + TickSize;
+    };
+    yFunc_ = [=](double y) -> double {
+        return (YMax - y) / this->pixelY_ + Margin;
+    };
+#endif
 
     contourLines_.resize(Palette.size());
     contourFills_.resize(Palette.size());

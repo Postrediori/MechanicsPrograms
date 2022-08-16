@@ -100,10 +100,10 @@ void FinitModel::load_from_file(const std::string& fileName) {
             }
         }
         else if (strncmp(line, "E ", 2)==0) {
-            sscanf(line, "E %f\n", &E);
+            sscanf(line, "E %lf\n", &E);
         }
         else if (strncmp(line, "F ", 2)==0) {
-            sscanf(line, "F %f\n", &F);
+            sscanf(line, "F %lf\n", &F);
         }
         else if (strncmp(line, "TITLE ", 6)==0) {
             char s[BufferLen] = { 0 };

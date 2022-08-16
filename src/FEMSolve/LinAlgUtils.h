@@ -14,16 +14,16 @@ public:
     }
 
     VectorT<T>& operator*=(const T x) {
-        std::transform(begin(), end(),
-            begin(),
+        std::transform(this->begin(), this->end(),
+            this->begin(),
             [x](const T a) -> T { return a * x; });
 
         return *this;
     }
 
     VectorT<T>& operator/=(const T x) {
-        std::transform(begin(), end(),
-            begin(),
+        std::transform(this->begin(), this->end(),
+            this->begin(),
             [x](const T a) -> T { return a / x; });
 
         return *this;

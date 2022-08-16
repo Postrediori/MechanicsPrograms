@@ -5,7 +5,7 @@
 #include "ModelWidget.h"
 
 const ByteColor TitleColor = { 255, 255, 255, 0xff };
-const ByteColor FixedColor = { 0.25, 224, 208, 0xff };
+const ByteColor FixedColor = { 64, 224, 208, 0xff };
 const ByteColor ElementColor = { 0, 255, 255, 0xff };
 const ByteColor TextColor = { 255, 0, 255, 0xff };
 const ByteColor NodeColor = { 255, 255, 255, 0xff };

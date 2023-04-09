@@ -15,7 +15,7 @@ const BoundaryCondition ClosedBoundary = {0.0f, 1.0f};
 const BoundaryCondition OpenBoundary = {1.0f, 0.0f};
 
 constexpr int DefUNType = 0;
-constexpr int DefPNType = 0;
+constexpr int DefPNType = 2;
 
 // u(x) initial conditions
 constexpr float UN_0 = 0.0;

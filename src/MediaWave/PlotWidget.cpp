@@ -288,7 +288,7 @@ void PlotWidget::draw_heatmap() {
         for (int i = 0; i < point_count_; i++) {
             double y = points[i * 2].y;
             double t = 1. - (y - ymin_) / (ymax_ - ymin_);
-            size_t k = static_cast<size_t>((static_cast<double>(Palette.size()) * t)) % Palette.size();
+            size_t k = static_cast<size_t>((static_cast<double>(Palette.size() - 1) * t));
 
             glColor4ubv(Palette[k].data());
 
@@ -302,7 +302,7 @@ void PlotWidget::draw_heatmap() {
             for (int i = 0; i < point_count_; i++) {
                 double y = points[i * 2].y;
                 double t = 1. - (y - ymin_) / (ymax_ - ymin_);
-                size_t k = static_cast<size_t>((static_cast<double>(Palette.size()) * t)) % Palette.size();
+                size_t k = static_cast<size_t>((static_cast<double>(Palette.size() - 1) * t));
 
                 fl_color(fl_rgb_color(Palette[k][0], Palette[k][1], Palette[k][2]));
 

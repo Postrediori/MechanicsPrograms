@@ -18,10 +18,9 @@ MainWindow::MainWindow(MediumModel* model)
 
     settings_btn = new Fl_Button(550, 20, 90, 25, "Settings");
     step_btn = new Fl_Button(550, 50, 90, 25, "Step");
-    start_btn = new Fl_Button(550, 80, 90, 25, "Start");
-    stop_btn = new Fl_Button(550, 110, 90, 25, "Stop");
+    start_stop_btn = new Fl_Button(550, 80, 90, 25, "Start");
 
-    bar_plot_check = new Fl_Check_Button(550, 140, 90, 25, "Bar Plot");
+    bar_plot_check = new Fl_Check_Button(550, 110, 90, 25, "Bar Plot");
     bar_plot_check->callback(switch_bar_plot_cb, this);
 
     bar_plot_check->value(bar_plot_);
@@ -32,11 +31,10 @@ MainWindow::MainWindow(MediumModel* model)
     this->end();
 
     step_btn->callback(step_cb_st, this);
-    start_btn->callback(start_cb_st, this);
-    stop_btn->callback(stop_cb_st, this);
+    start_stop_btn->callback(start_stop_cb_st, this);
     settings_btn->callback(settings_cb_st, this);
 
-    stop_btn->deactivate();
+    Fl::focus(start_stop_btn);
 
     uw->view_range(0.0, DefL, -2.0, 2.0);
     uw->ticks(PlotDefaults::TickCount, PlotDefaults::TickSize);
@@ -135,32 +133,32 @@ void MainWindow::step_cb() {
     this->redraw();
 }
 
-void MainWindow::start_cb_st(Fl_Widget*, void* v) {
+void MainWindow::start_stop_cb_st(Fl_Widget*, void* v) {
     auto w = static_cast<MainWindow*>(v);
-    w->start_cb();
+    w->start_stop_cb();
 }
 
-void MainWindow::start_cb() {
-    this->settings_btn->deactivate();
-    this->step_btn->deactivate();
-    this->start_btn->deactivate();
-    this->stop_btn->activate();
+void MainWindow::start_stop_cb() {
+    if (running_) {
+        running_ = false;
 
-    Fl::add_timeout(TimerInterval, timer_cb_st, this);
-}
+        this->settings_btn->activate();
+        this->step_btn->activate();
 
-void MainWindow::stop_cb_st(Fl_Widget*, void* v) {
-    auto w = static_cast<MainWindow*>(v);
-    w->stop_cb();
-}
+        this->start_stop_btn->label("Start");
 
-void MainWindow::stop_cb() {
-    this->settings_btn->activate();
-    this->step_btn->activate();
-    this->start_btn->activate();
-    this->stop_btn->deactivate();
+        Fl::remove_timeout(timer_cb_st, this);
+    }
+    else {
+        running_ = true;
 
-    Fl::remove_timeout(timer_cb_st, this);
+        this->settings_btn->deactivate();
+        this->step_btn->deactivate();
+
+        this->start_stop_btn->label("Stop");
+
+        Fl::add_timeout(TimerInterval, timer_cb_st, this);
+    }
 }
 
 void MainWindow::settings_cb_st(Fl_Widget*, void* v) {
@@ -263,6 +261,7 @@ void MainWindow::create_settings_wnd() {
     left_side_choice->add(label_close_left)->user_data((void*)(SideType::Closed));
     left_side_choice->add(label_open)->user_data((void*)(SideType::Open));
     left_side_choice->add(label_manual)->user_data((void*)(SideType::Manual));
+    left_side_choice->selection_color(FL_DARK2);
     set_tree_icons(left_side_choice);
     left_side_choice->callback(left_side_cb_st, this);
     bl_in = new Fl_Input(70, 330, 90, 25, "bl");
@@ -274,6 +273,7 @@ void MainWindow::create_settings_wnd() {
     right_side_choice->add(label_close_right)->user_data((void*)(SideType::Closed));
     right_side_choice->add(label_open)->user_data((void*)(SideType::Open));
     right_side_choice->add(label_manual)->user_data((void*)(SideType::Manual));
+    right_side_choice->selection_color(FL_DARK2);
     set_tree_icons(right_side_choice);
     right_side_choice->callback(right_side_cb_st, this);
     br_in = new Fl_Input(190, 330, 90, 25, "br");

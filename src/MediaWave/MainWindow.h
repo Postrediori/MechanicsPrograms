@@ -45,11 +45,8 @@ private:
     static void step_cb_st(Fl_Widget*, void*);
     void step_cb();
 
-    static void start_cb_st(Fl_Widget*, void*);
-    void start_cb();
-
-    static void stop_cb_st(Fl_Widget*, void*);
-    void stop_cb();
+    static void start_stop_cb_st(Fl_Widget*, void*);
+    void start_stop_cb();
 
     static void settings_cb_st(Fl_Widget*, void*);
     void settings_cb();
@@ -88,14 +85,14 @@ private:
 
 private:
     bool bar_plot_{ true };
+    bool running_{ false };
 
     MediumModel *model_{ nullptr };
 
     PlotWidget* uw{ nullptr };
     PlotWidget* pw{ nullptr };
     Fl_Button* step_btn{ nullptr };
-    Fl_Button* start_btn{ nullptr };
-    Fl_Button* stop_btn{ nullptr };
+    Fl_Button* start_stop_btn{ nullptr };
     Fl_Button* settings_btn{ nullptr };
 
     // Settings window properties

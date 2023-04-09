@@ -27,28 +27,20 @@ WaveModel::WaveModel() {
 }
 
 double WaveModel::fourier_n(double d, int n) {
-    constexpr int MaxIter = 50000;
-    std::vector<double> fi(MaxIter + 1);
+    constexpr int MaxIter = 1000;
 
     double minx = 0.0;
     double maxx = d;
     double dx = (maxx - minx) / double(MaxIter);
+    double s = 0.0;
     for (int i = 0; i < MaxIter + 1; i++) {
         double xi = minx + dx * i;
-        fi[i] = surface_func(xi, delta, epsilon) * cos(kn[n - 1] * xi);
+        double f = surface_func(xi, delta, epsilon) * cos(kn[n - 1] * xi);
+        int k = (i == 0 || i == MaxIter) ? 1 : 2 + (i % 2) * 2;
+        s += f * static_cast<double>(k);
     }
 
-    int k = MaxIter >> 1;
-    double s1 = fi[0] + fi[MaxIter];
-    double s2{ 0.0 }, s4{ 0.0 };
-    for (int i = 2; i <= k; i++) {
-        s2 += fi[(i - 1) * 2 - 1];
-    }
-    for (int i = 1; i <= k; i++) {
-        s4 += fi[(i - 1) * 2];
-    }
-
-    double s = (s1 + 2.0 * s2 + 4.0 * s4) * dx / 3.0;
+    s = s * dx / 3.0;
 
     return 2.0 * s / d;
 }

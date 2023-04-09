@@ -28,20 +28,19 @@ WaveWindow::WaveWindow(int W, int H, const char* l)
 
     restart_btn = new Fl_Button(570, 200, 90, 25, "Restart");
     step_btn = new Fl_Button(570, 230, 90, 25, "Step");
-    start_btn = new Fl_Button(570, 260, 90, 25, "Start");
-    stop_btn = new Fl_Button(570, 290, 90, 25, "Stop");
+    start_stop_btn = new Fl_Button(570, 260, 90, 25, "Start");
     restart_btn->callback(restart_cb, this);
     step_btn->callback(step_cb, this);
-    start_btn->callback(start_cb, this);
-    stop_btn->callback(stop_cb, this);
+    start_stop_btn->callback(start_stop_cb, this);
 
-    screenshot_btn = new Fl_Button(570, 320, 90, 25, "Screenshot");
+    Fl::focus(start_stop_btn);
+
+    screenshot_btn = new Fl_Button(570, 290, 90, 25, "Screenshot");
     screenshot_btn->callback(screenshot_cb, this);
 
-    auto save_frames_btn = new Fl_Check_Button(570, 350, 90, 25, "Save Frames");
+    auto save_frames_btn = new Fl_Check_Button(560, 320, 90, 25, "Save Frames");
     save_frames_btn->callback(save_frames_cb, this);
 
-    stop_btn->deactivate();
     save_frames_btn->value(saving_frames);
 
     this->resizable(ww);
@@ -133,44 +132,34 @@ void WaveWindow::step() {
     }
 }
 
-void WaveWindow::start_cb(Fl_Widget* /*w*/, void* v) {
+void WaveWindow::start_stop_cb(Fl_Widget* /*w*/, void* v) {
     auto wnd = reinterpret_cast<WaveWindow*>(v);
-    wnd->start();
+    wnd->start_stop();
 }
 
-void WaveWindow::start() {
+void WaveWindow::start_stop() {
     if (animating) {
-        return;
+        animating = false;
+
+        restart_btn->activate();
+        step_btn->activate();
+        screenshot_btn->activate();
+
+        start_stop_btn->label("Start");
+
+        Fl::remove_timeout(timer_cb);
     }
-    animating = true;
+    else {
+        animating = true;
 
-    restart_btn->deactivate();
-    step_btn->deactivate();
-    start_btn->deactivate();
-    stop_btn->activate();
-    screenshot_btn->deactivate();
+        restart_btn->deactivate();
+        step_btn->deactivate();
+        screenshot_btn->deactivate();
 
-    Fl::add_timeout(TimerInterval, timer_cb, this);
-}
+        start_stop_btn->label("Stop");
 
-void WaveWindow::stop_cb(Fl_Widget* /*w*/, void* v) {
-    auto wnd = reinterpret_cast<WaveWindow*>(v);
-    wnd->stop();
-}
-
-void WaveWindow::stop() {
-    if (!animating) {
-        return;
+        Fl::add_timeout(TimerInterval, timer_cb, this);
     }
-    animating = false;
-
-    restart_btn->activate();
-    step_btn->activate();
-    start_btn->activate();
-    stop_btn->deactivate();
-    screenshot_btn->activate();
-
-    Fl::remove_timeout(timer_cb);
 }
 
 void WaveWindow::timer_cb(void* v) {

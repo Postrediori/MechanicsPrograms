@@ -16,11 +16,8 @@ private:
     static void step_cb(Fl_Widget* w, void* v);
     void step();
 
-    static void start_cb(Fl_Widget* w, void* v);
-    void start();
-    
-    static void stop_cb(Fl_Widget* w, void* v);
-    void stop();
+    static void start_stop_cb(Fl_Widget* w, void* v);
+    void start_stop();
 
     static void timer_cb(void* v);
 
@@ -38,10 +35,10 @@ private:
     Fl_Input* g_in{ nullptr }, * h_in{ nullptr }, * delta_in{ nullptr },
         * eps_in{ nullptr }, * dtime_in{ nullptr };
     Fl_Button* restart_btn{ nullptr }, * step_btn{ nullptr },
-        * start_btn{ nullptr }, * stop_btn{ nullptr };
+        * start_stop_btn{ nullptr };
     Fl_Button *screenshot_btn{ nullptr };
 
     bool animating{ false };
     int frame_counter{ 0 };
-    bool saving_frames{ true };
+    bool saving_frames{ false };
 };

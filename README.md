@@ -110,6 +110,17 @@ of a fluid.
 ![MediaWave simulation screenshot](images/mediawave.png)
 ![MediaWave settings screenshot](images/mediawave_settings.png)
 
+### GraphView
+
+Methods of one-dimensional optimizaion:
+* Fibonacci optimization method
+* [Gradient descent](https://en.wikipedia.org/wiki/Gradient_descent)
+* Heavy ball method
+* Bolzano or half-division method
+* Scanning method
+
+![GraphView screenshot](images/graphview.png)
+
 ### SimplexView
 
 GUI tool originally designed for demonstration of Nelder–Mead optimization

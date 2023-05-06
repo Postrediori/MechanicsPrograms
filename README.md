@@ -5,7 +5,7 @@ This is the collection of various applications for mechanics simulations and str
 ## Getting Started
 
 All projects use CMake as build system. C++ code compatibility is tested
-with gcc-5 and Microsoft Visual Studio Express 2008 and 2012.
+with gcc and Microsoft Visual Studio.
 
 ## Built With
 
@@ -61,13 +61,14 @@ cd MechanicsPrograms
 mkdir build && cd build
 cmake ..
 make
+make install
 ```
 
-After the successful build the binary of `{Project}`  will end up in `build/{Project}/`.
-E.g. binary of `FEMSolve` can be launched from the build directory with the command
+After the successful build and running `make install` all binaries of  will end up in `bundle` directory.
+E.g. binary of `FEMSolve` can be launched from the source directory with the command
 
 ```
-./FEMSolve/FEMSolve
+./bundle/FEMSolve
 ```
  
 ## Structure
@@ -112,12 +113,13 @@ of a fluid.
 
 ### GraphView
 
-Methods of one-dimensional optimizaion:
-* Fibonacci optimization method
-* [Gradient descent](https://en.wikipedia.org/wiki/Gradient_descent)
-* Heavy ball method
-* Bolzano or half-division method
-* Scanning method
+Methods of one-dimensional minimization (optimization) for  finding a local minimum of a function:
+
+* [Fibonacci optimization method](https://en.wikipedia.org/wiki/Golden-section_search#Fibonacci_search).
+* [Gradient descent](https://en.wikipedia.org/wiki/Gradient_descent).
+* [Heavy ball method](https://en.wikipedia.org/wiki/Gradient_descent#Momentum_or_heavy_ball_method).
+* [Bolzano or bisection method](https://en.wikipedia.org/wiki/Bisection_method).
+* [Scanning method](https://en.wikipedia.org/wiki/Line_search).
 
 ![GraphView screenshot](images/graphview.png)
 

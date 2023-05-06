@@ -5,10 +5,8 @@ target_precompile_headers(${PROJECT} PUBLIC
 
 target_include_directories(${PROJECT} PUBLIC
     ${FLTK_INCLUDE_DIR}
-    ${OPENGL_INCLUDE_DIR}
     )
 
 target_link_libraries(${PROJECT}
     ${FLTK_LIBRARIES}
-    ${OPENGL_LIBRARIES}
     )

@@ -104,7 +104,7 @@ void SimplexEngine::search_step() {
 }
 
 void SimplexEngine::update_min() {
-    hmm_vec4 pt = simplex_.getMinPoint();
+    HMM_Vec4 pt = simplex_.getMinPoint();
     xmin_ = pt.X;
     ymin_ = pt.Y;
     zmin_ = pt.Z;

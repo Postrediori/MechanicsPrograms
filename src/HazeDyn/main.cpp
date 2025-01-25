@@ -9,6 +9,7 @@
 #include <FL/Fl_Choice.H>
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include "HazeFunc.h"
 

@@ -34,9 +34,9 @@ private:
     std::vector<ContourLine> contourLines_;
     std::vector<ContourFill> contourFills_;
 
-    std::vector<hmm_vec2> boundingBox_;
-    std::vector<hmm_vec2> ticksX_;
-    std::vector<hmm_vec2> ticksY_;
+    std::vector<HMM_Vec2> boundingBox_;
+    std::vector<HMM_Vec2> ticksX_;
+    std::vector<HMM_Vec2> ticksY_;
 
     SearchEngine* engine_{ nullptr };
 

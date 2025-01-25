@@ -28,11 +28,11 @@ CellType GetCellType(CellValues vals) {
     return type;
 }
 
-void CreateCorner(std::vector<hmm_vec2>& lines, CellType type,
-                hmm_vec2 c0, hmm_vec2 s0, CellValues vals) {
+void CreateCorner(std::vector<HMM_Vec2>& lines, CellType type,
+                HMM_Vec2 c0, HMM_Vec2 s0, CellValues vals) {
     using namespace CellTypes;
 
-    hmm_vec2 p1, p2;
+    HMM_Vec2 p1, p2;
 
     switch (type) {
     case NorthWest:
@@ -61,11 +61,11 @@ void CreateCorner(std::vector<hmm_vec2>& lines, CellType type,
     lines.push_back(c0 + s0 * p2);
 }
 
-void CreateHalf(std::vector<hmm_vec2>& lines, CellType type,
-              hmm_vec2 c0, hmm_vec2 s0, CellValues vals) {
+void CreateHalf(std::vector<HMM_Vec2>& lines, CellType type,
+              HMM_Vec2 c0, HMM_Vec2 s0, CellValues vals) {
     using namespace CellTypes;
 
-    hmm_vec2 p1, p2;
+    HMM_Vec2 p1, p2;
 
     switch (type) {
     case NorthWest | NorthEast:
@@ -84,11 +84,11 @@ void CreateHalf(std::vector<hmm_vec2>& lines, CellType type,
     lines.push_back(c0 + s0 * p2);
 }
 
-void CreateAmbiguity(std::vector<hmm_vec2>& lines, CellType flags,
-                   hmm_vec2 c0, hmm_vec2 s0, CellValues vals, bool u) {
+void CreateAmbiguity(std::vector<HMM_Vec2>& lines, CellType flags,
+                   HMM_Vec2 c0, HMM_Vec2 s0, CellValues vals, bool u) {
     using namespace CellTypes;
 
-    hmm_vec2 p1, p2, p3, p4;
+    HMM_Vec2 p1, p2, p3, p4;
 
     if ((flags ==(NorthWest | SouthEast) && u) ||
             (flags ==(NorthEast | SouthWest) && !u)) {
@@ -114,12 +114,12 @@ void CreateAmbiguity(std::vector<hmm_vec2>& lines, CellType flags,
     lines.push_back(c0 + s0 * p4);
 }
 
-void CreateFullFilled(std::vector<hmm_vec2>& triangles,
-              hmm_vec2 c0, hmm_vec2 s0) {
-    hmm_vec2 c1 = c0 + s0 * HMM_Vec2(0, 0);
-    hmm_vec2 c2 = c0 + s0 * HMM_Vec2(1, 0);
-    hmm_vec2 c3 = c0 + s0 * HMM_Vec2(1, 1);
-    hmm_vec2 c4 = c0 + s0 * HMM_Vec2(0, 1);
+void CreateFullFilled(std::vector<HMM_Vec2>& triangles,
+              HMM_Vec2 c0, HMM_Vec2 s0) {
+    HMM_Vec2 c1 = c0 + s0 * HMM_Vec2{ 0, 0 };
+    HMM_Vec2 c2 = c0 + s0 * HMM_Vec2{ 1, 0 };
+    HMM_Vec2 c3 = c0 + s0 * HMM_Vec2{ 1, 1 };
+    HMM_Vec2 c4 = c0 + s0 * HMM_Vec2{ 0, 1 };
 
     triangles.push_back(c1);
     triangles.push_back(c3);
@@ -130,16 +130,16 @@ void CreateFullFilled(std::vector<hmm_vec2>& triangles,
     triangles.push_back(c3);
 }
 
-void CreateFilledCorner(std::vector<hmm_vec2>& triangles, CellType type,
-                    hmm_vec2 c0, hmm_vec2 s0, CellValues vals) {
+void CreateFilledCorner(std::vector<HMM_Vec2>& triangles, CellType type,
+                    HMM_Vec2 c0, HMM_Vec2 s0, CellValues vals) {
     using namespace CellTypes;
 
-    hmm_vec2 c1 = c0 + s0 * HMM_Vec2(0, 0);
-    hmm_vec2 c2 = c0 + s0 * HMM_Vec2(1, 0);
-    hmm_vec2 c3 = c0 + s0 * HMM_Vec2(1, 1);
-    hmm_vec2 c4 = c0 + s0 * HMM_Vec2(0, 1);
+    HMM_Vec2 c1 = c0 + s0 * HMM_Vec2{ 0, 0 };
+    HMM_Vec2 c2 = c0 + s0 * HMM_Vec2{ 1, 0 };
+    HMM_Vec2 c3 = c0 + s0 * HMM_Vec2{ 1, 1 };
+    HMM_Vec2 c4 = c0 + s0 * HMM_Vec2{ 0, 1 };
 
-    hmm_vec2 p1, p2;
+    HMM_Vec2 p1, p2;
 
     switch (type) {
     case NorthWest:
@@ -167,8 +167,8 @@ void CreateFilledCorner(std::vector<hmm_vec2>& triangles, CellType type,
         break;
     }
 
-    hmm_vec2 d1 = c0 + s0 * p1;
-    hmm_vec2 d2 = c0 + s0 * p2;
+    HMM_Vec2 d1 = c0 + s0 * p1;
+    HMM_Vec2 d2 = c0 + s0 * p2;
 
     switch (type) {
     case NorthWest:
@@ -256,11 +256,11 @@ void CreateFilledCorner(std::vector<hmm_vec2>& triangles, CellType type,
     }
 }
 
-void CreateFilledHalf(std::vector<hmm_vec2>& triangles, CellType type,
-                  hmm_vec2 c0, hmm_vec2 s0, CellValues vals) {
+void CreateFilledHalf(std::vector<HMM_Vec2>& triangles, CellType type,
+                  HMM_Vec2 c0, HMM_Vec2 s0, CellValues vals) {
     using namespace CellTypes;
 
-    hmm_vec2 p1, p2, p3, p4;
+    HMM_Vec2 p1, p2, p3, p4;
 
     switch (type) {
     case (NorthWest | NorthEast):
@@ -292,10 +292,10 @@ void CreateFilledHalf(std::vector<hmm_vec2>& triangles, CellType type,
         break;
     }
 
-    hmm_vec2 d1 = c0 + s0 * p1;
-    hmm_vec2 d2 = c0 + s0 * p2;
-    hmm_vec2 d3 = c0 + s0 * p3;
-    hmm_vec2 d4 = c0 + s0 * p4;
+    HMM_Vec2 d1 = c0 + s0 * p1;
+    HMM_Vec2 d2 = c0 + s0 * p2;
+    HMM_Vec2 d3 = c0 + s0 * p3;
+    HMM_Vec2 d4 = c0 + s0 * p4;
 
     triangles.push_back(d1);
     triangles.push_back(d3);
@@ -306,19 +306,19 @@ void CreateFilledHalf(std::vector<hmm_vec2>& triangles, CellType type,
     triangles.push_back(d3);
 }
 
-void CreateFilledAmbiguity(std::vector<hmm_vec2>& triangles, CellType type,
-                       hmm_vec2 c0, hmm_vec2 s0, CellValues vals, bool u) {
+void CreateFilledAmbiguity(std::vector<HMM_Vec2>& triangles, CellType type,
+                       HMM_Vec2 c0, HMM_Vec2 s0, CellValues vals, bool u) {
     using namespace CellTypes;
 
-    hmm_vec2 c1 = c0 + s0 * HMM_Vec2(0, 0);
-    hmm_vec2 c2 = c0 + s0 * HMM_Vec2(1, 0);
-    hmm_vec2 c3 = c0 + s0 * HMM_Vec2(1, 1);
-    hmm_vec2 c4 = c0 + s0 * HMM_Vec2(0, 1);
+    HMM_Vec2 c1 = c0 + s0 * HMM_Vec2{ 0, 0 };
+    HMM_Vec2 c2 = c0 + s0 * HMM_Vec2{ 1, 0 };
+    HMM_Vec2 c3 = c0 + s0 * HMM_Vec2{ 1, 1 };
+    HMM_Vec2 c4 = c0 + s0 * HMM_Vec2{ 0, 1 };
 
-    hmm_vec2 p1 = c0 + s0 * HMM_Vec2(fabs(vals[0]/(vals[0]-vals[1])), 0);
-    hmm_vec2 p2 = c0 + s0 * HMM_Vec2(1, fabs(vals[1]/(vals[1]-vals[2])));
-    hmm_vec2 p3 = c0 + s0 * HMM_Vec2(fabs(vals[3]/(vals[3]-vals[2])), 1);
-    hmm_vec2 p4 = c0 + s0 * HMM_Vec2(0, fabs(vals[0]/(vals[0]-vals[3])));
+    HMM_Vec2 p1 = c0 + s0 * HMM_Vec2{ fabs(vals[0] / (vals[0] - vals[1])), 0 };
+    HMM_Vec2 p2 = c0 + s0 * HMM_Vec2{ 1, fabs(vals[1] / (vals[1] - vals[2])) };
+    HMM_Vec2 p3 = c0 + s0 * HMM_Vec2{ fabs(vals[3] / (vals[3] - vals[2])), 1 };
+    HMM_Vec2 p4 = c0 + s0 * HMM_Vec2{ 0, fabs(vals[0] / (vals[0] - vals[3])) };
 
     if (u) {
         triangles.push_back(p1);
@@ -362,8 +362,8 @@ bool ContourLine::init(
     xmax_ = xmax; ymax_ = ymax;
     threshold_ = threshold;
 
-    hmm_vec2 s0 = (HMM_Vec2(xmax_, ymax_) - HMM_Vec2(xmin_, ymin_)) /
-        HMM_Vec2(cols - 1, rows - 1);
+    HMM_Vec2 s0 = (HMM_Vec2{ xmax_, ymax_ } - HMM_Vec2{ xmin_, ymin_ }) /
+        HMM_Vec2{ static_cast<float>(cols - 1), static_cast<float>(rows - 1) };
 
     CellValues vals;
     float v{ 0.0f };
@@ -372,7 +372,7 @@ bool ContourLine::init(
 
     for (int j=0; j<rows-1; j++) {
         for (int i=0; i<cols-1; i++) {
-            hmm_vec2 c0 = HMM_Vec2(xmin_, ymin_) + HMM_Vec2(i, j) * s0;
+            HMM_Vec2 c0 = HMM_Vec2{ xmin_, ymin_ } + HMM_Vec2{ static_cast<float>(i), static_cast<float>(j) } *s0;
 
             vals[0] = points[(j  ) * rows + (i  )] - threshold_;
             vals[1] = points[(j  ) * rows + (i+1)] - threshold_;
@@ -455,8 +455,8 @@ bool ContourFill::init(
     xmax_ = xmax; ymax_ = ymax;
     threshold_ = threshold;
 
-    hmm_vec2 s0 = (HMM_Vec2(xmax_, ymax_) - HMM_Vec2(xmin_, ymin_)) /
-        HMM_Vec2(cols - 1, rows - 1);
+    HMM_Vec2 s0 = (HMM_Vec2{ xmax_, ymax_ } - HMM_Vec2{ xmin_, ymin_ }) /
+        HMM_Vec2{ static_cast<float>(cols - 1), static_cast<float>(rows - 1) };
 
     CellValues vals;
     float v{ 0.0f };
@@ -465,7 +465,7 @@ bool ContourFill::init(
 
     for (int j=0; j<rows-1; j++) {
         for (int i=0; i<cols-1; i++) {
-            hmm_vec2 c0 = HMM_Vec2(xmin_, ymin_) + HMM_Vec2(i, j) * s0;
+            HMM_Vec2 c0 = HMM_Vec2{ xmin_, ymin_ } + HMM_Vec2{ static_cast<float>(i), static_cast<float>(j) } *s0;
 
             vals[0] = points[(j  ) * rows + (i  )] - threshold_;
             vals[1] = points[(j  ) * rows + (i+1)] - threshold_;

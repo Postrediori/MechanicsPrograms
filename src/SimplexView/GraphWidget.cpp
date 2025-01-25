@@ -54,10 +54,10 @@ GraphWidget::GraphWidget(int X, int Y, int W, int H, SearchEngine* e, const char
     using namespace PlotParams;
 
     boundingBox_ = {
-        HMM_Vec2(XMin, YMin),
-        HMM_Vec2(XMax, YMin),
-        HMM_Vec2(XMax, YMax),
-        HMM_Vec2(XMin, YMax)
+        HMM_Vec2{static_cast<float>(XMin), static_cast<float>(YMin)},
+        HMM_Vec2{static_cast<float>(XMax), static_cast<float>(YMin)},
+        HMM_Vec2{static_cast<float>(XMax), static_cast<float>(YMax)},
+        HMM_Vec2{static_cast<float>(XMin), static_cast<float>(YMax)}
     };
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
@@ -297,8 +297,8 @@ void GraphWidget::update_size() {
     for (size_t i = 0; i <= TickCount; i++) {
         float y = YMin + static_cast<float>(i) * dTickY;
         float tickScale = (i % 2) ? 0.5f : 1.0f;
-        ticksY_[i * 2] = HMM_Vec2(XMin, y);
-        ticksY_[i * 2 + 1] = HMM_Vec2(XMin - static_cast<float>(TickSize) * pixelX_ * tickScale, y);
+        ticksY_[i * 2] = HMM_Vec2{ static_cast<float>(XMin), y };
+        ticksY_[i * 2 + 1] = HMM_Vec2{ static_cast<float>(XMin - TickSize * pixelX_ * tickScale), y };
     }
 
     /* X Ticks */
@@ -307,8 +307,8 @@ void GraphWidget::update_size() {
     for (size_t i = 0; i <= TickCount; i++) {
         float x = XMin + static_cast<float>(i) * dTickX;
         float tickScale = (i % 2) ? 0.5f : 1.0f;
-        ticksX_[i * 2] = HMM_Vec2(x, YMin);
-        ticksX_[i * 2 + 1] = HMM_Vec2(x, YMin - static_cast<float>(TickSize) * pixelY_ * tickScale);
+        ticksX_[i * 2] = HMM_Vec2{ static_cast<float>(x), static_cast<float>(YMin) };
+        ticksX_[i * 2 + 1] = HMM_Vec2{ static_cast<float>(x), static_cast<float>(YMin - TickSize * pixelY_ * tickScale) };
     }
 
 #if DRAW_METHOD==DRAW_METHOD_FLTK

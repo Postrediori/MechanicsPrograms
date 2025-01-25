@@ -37,7 +37,7 @@ public:
     void render(CoordinateFunc xFunc, CoordinateFunc yFunc) const override;
 
 private:
-    std::vector<hmm_vec2> lines;
+    std::vector<HMM_Vec2> lines;
 };
 
 // ----------------------------------------------------------------------------
@@ -54,5 +54,5 @@ public:
     void render(CoordinateFunc xFunc, CoordinateFunc yFunc) const override;
 
 private:
-    std::vector<hmm_vec2> triangles;
+    std::vector<HMM_Vec2> triangles;
 };

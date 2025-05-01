@@ -28,6 +28,10 @@ macro(make_project_)
 endmacro()
 
 macro(make_project_options_)
+    if (USE_OPENGL1_4)
+        target_compile_definitions(${PROJECT} PUBLIC DRAW_METHOD=1)
+    endif ()
+
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(${PROJECT} PRIVATE
             -Wall -Wextra -Wpedantic -Wno-missing-field-initializers)

@@ -15,34 +15,36 @@ namespace PlotParams {
     constexpr int Margin = 20;
 }
 
-const std::vector<ByteColor> Palette = {
-    {0xf1, 0xed, 0xc8, 0x00},
-    {0xe7, 0xdb, 0xa9, 0x00},
-    {0xdd, 0xc9, 0x8a, 0x00},
-    {0xba, 0xc5, 0x96, 0x00},
-    {0xa4, 0xca, 0xa1, 0x00},
-    {0xbf, 0xd5, 0xee, 0x00},
-    {0xa3, 0xc3, 0xe6, 0x00},
-    {0x89, 0xb0, 0xda, 0x00},
-    {0x6b, 0x99, 0xc9, 0x00},
-    {0x51, 0x82, 0xb4, 0x00},
+// Palette: Blue, Green, Yellow
+const std::vector<Fl_Color> Palette = {
+    fl_rgb_color(0xf1, 0xed, 0xc8),
+    fl_rgb_color(0xe7, 0xdb, 0xa9),
+    fl_rgb_color(0xdd, 0xc9, 0x8a),
+    fl_rgb_color(0xba, 0xc5, 0x96),
+    fl_rgb_color(0xa4, 0xca, 0xa1),
+    fl_rgb_color(0xbf, 0xd5, 0xee),
+    fl_rgb_color(0xa3, 0xc3, 0xe6),
+    fl_rgb_color(0x89, 0xb0, 0xda),
+    fl_rgb_color(0x6b, 0x99, 0xc9),
+    fl_rgb_color(0x51, 0x82, 0xb4)
 };
 
-//const std::vector<ByteColor> Palette = {
-//    {0xe2, 0x08, 0x00, 0x00},
-//    {0xf0, 0x71, 0x13, 0x00},
-//    {0xff, 0xe4, 0x29, 0x00},
-//    {0x91, 0xa8, 0x7b, 0x00},
-//    {0x2c, 0x72, 0xc7, 0x00},
-//    {0x17, 0x5b, 0xaa, 0x00},
-//    {0x00, 0x38, 0x76, 0x00},
-//    {0x00, 0x30, 0x65, 0x00},
-//    {0x00, 0x27, 0x54, 0x00},
-//    {0x00, 0x1e, 0x43, 0x00},
+// Palette: Blue, Yellow, Red
+//const std::vector<Fl_Color> Palette = {
+//    fl_rgb_color(0xe2, 0x08, 0x00),
+//    fl_rgb_color(0xf0, 0x71, 0x13),
+//    fl_rgb_color(0xff, 0xe4, 0x29),
+//    fl_rgb_color(0x91, 0xa8, 0x7b),
+//    fl_rgb_color(0x2c, 0x72, 0xc7),
+//    fl_rgb_color(0x17, 0x5b, 0xaa),
+//    fl_rgb_color(0x00, 0x38, 0x76),
+//    fl_rgb_color(0x00, 0x30, 0x65),
+//    fl_rgb_color(0x00, 0x27, 0x54),
+//    fl_rgb_color(0x00, 0x1e, 0x43)
 //};
 
-const ByteColor ColorLevelLines = {0x55, 0x55, 0x55, 0xff};
-const ByteColor ColorTicks = {0, 0, 0, 0xff};
+const Fl_Color ColorLevelLines = fl_rgb_color(0x55);
+const Fl_Color ColorTicks = fl_rgb_color(0);
 
 GraphWidget::GraphWidget(int X, int Y, int W, int H, SearchEngine* e, const char* l)
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
@@ -174,9 +176,9 @@ void GraphWidget::draw() {
 void GraphWidget::draw_contour_plot() {
     for (size_t i = 0; i < Palette.size(); i++) {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-        glColor4ubv(Palette[i].data());
+        SET_FL_COLOR_TO_GL(Palette[i]);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-        fl_color(fl_rgb_color(Palette[i][0], Palette[i][1], Palette[i][2]));
+        fl_color(Palette[i]);
 #endif
         contourFills_[i].render(xFunc_, yFunc_);
     }
@@ -184,9 +186,9 @@ void GraphWidget::draw_contour_plot() {
 
 void GraphWidget::draw_contour_lines() {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(ColorLevelLines.data());
+    SET_FL_COLOR_TO_GL(ColorLevelLines);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(ColorLevelLines[0], ColorLevelLines[1], ColorLevelLines[2]));
+    fl_color(ColorLevelLines);
 #endif
     for (const auto& p : contourLines_) {
         p.render(xFunc_, yFunc_);
@@ -201,7 +203,7 @@ void GraphWidget::draw_engine_status() {
 
 void GraphWidget::draw_box() {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(ColorTicks.data());
+    SET_FL_COLOR_TO_GL(ColorTicks);
     glEnableClientState(GL_VERTEX_ARRAY);
 
     glVertexPointer(2, GL_FLOAT, 0, boundingBox_.data());
@@ -209,7 +211,7 @@ void GraphWidget::draw_box() {
 
     glDisableClientState(GL_VERTEX_ARRAY);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(ColorTicks[0], ColorTicks[1], ColorTicks[2]));
+    fl_color(ColorTicks);
     fl_line_style(FL_SOLID, 1);
 
     fl_begin_loop();
@@ -224,7 +226,7 @@ void GraphWidget::draw_ticks() {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
     using namespace PlotParams;
 
-    glColor4ubv(ColorTicks.data());
+    SET_FL_COLOR_TO_GL(ColorTicks);
     glEnableClientState(GL_VERTEX_ARRAY);
 
     if (ticksX_.size() > 0) {
@@ -239,7 +241,7 @@ void GraphWidget::draw_ticks() {
 
     glDisableClientState(GL_VERTEX_ARRAY);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(ColorTicks[0], ColorTicks[1], ColorTicks[2]));
+    fl_color(ColorTicks);
     fl_line_style(FL_SOLID, 1);
 
     for (size_t i = 0; i < ticksX_.size(); i += 2) {

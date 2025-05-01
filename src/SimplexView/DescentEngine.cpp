@@ -5,9 +5,9 @@
 #include "SearchEngine.h"
 #include "DescentEngine.h"
 
-const ByteColor LineColor = {0, 0, 0, 0xff};
-const ByteColor PreviousMarkerColor = {128, 64, 0, 0xff};
-const ByteColor CurrentMarkerColor = {0, 64, 128, 0xff};
+const Fl_Color LineColor = fl_rgb_color(0);
+const Fl_Color PreviousMarkerColor = fl_rgb_color(128, 64, 0);
+const Fl_Color CurrentMarkerColor = fl_rgb_color(0, 64, 128);
 
 DescentEngine::DescentEngine() {
     set_start_point(XMin, YMin);
@@ -21,10 +21,10 @@ void DescentEngine::draw(CoordinateFunc xFunc, CoordinateFunc yFunc) {
     float oldW{ 0.0f };
     glGetFloatv(GL_LINE_WIDTH, &oldW);
     glLineWidth(LineWidth);
-    glColor4ubv(LineColor.data());
+    SET_FL_COLOR_TO_GL(LineColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
     fl_line_style(FL_SOLID, LineWidth);
-    fl_color(fl_rgb_color(LineColor[0], LineColor[1], LineColor[2]));
+    fl_color(LineColor);
 #endif
 
     DrawLine(
@@ -33,18 +33,18 @@ void DescentEngine::draw(CoordinateFunc xFunc, CoordinateFunc yFunc) {
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
     glLineWidth(oldW);
-    glColor4ubv(PreviousMarkerColor.data());
+    SET_FL_COLOR_TO_GL(PreviousMarkerColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(PreviousMarkerColor[0], PreviousMarkerColor[1], PreviousMarkerColor[2]));
+    fl_color(PreviousMarkerColor);
 #endif
     DrawRectangle(
         xFunc(xold_ - PointSize), yFunc(yold_ - PointSize),
         xFunc(xold_ + PointSize), yFunc(yold_ + PointSize));
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(CurrentMarkerColor.data());
+    SET_FL_COLOR_TO_GL(CurrentMarkerColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(CurrentMarkerColor[0], CurrentMarkerColor[1], CurrentMarkerColor[2]));
+    fl_color(CurrentMarkerColor);
 #endif
     DrawRectangle(
         xFunc(x_ - PointSize), yFunc(y_ - PointSize),

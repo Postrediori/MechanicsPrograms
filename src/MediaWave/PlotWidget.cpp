@@ -2,20 +2,27 @@
 #include "MathUtils.h"
 #include "PlotWidget.h"
 
-static const std::vector<std::array<uint8_t, 4>> Palette = {
-    {0xa5, 0x00, 0x27, 0x00},
-    {0xd7, 0x30, 0x27, 0x00},
-    {0xf4, 0x6d, 0x43, 0x00},
-    {0xfd, 0xae, 0x61, 0x00},
-    {0xfe, 0xe0, 0x90, 0x00},
-    {0xff, 0xff, 0xbf, 0x00},
-    {0xe0, 0xf3, 0xf9, 0x00},
-    {0xab, 0xd9, 0xea, 0x00},
-    {0x74, 0xad, 0xd1, 0x00},
-    {0x45, 0x75, 0xb4, 0x00},
-    {0x31, 0x36, 0x95, 0x00},
+static const std::vector<Fl_Color> Palette = {
+    fl_rgb_color(0xa5, 0x00, 0x27),
+    fl_rgb_color(0xd7, 0x30, 0x27),
+    fl_rgb_color(0xf4, 0x6d, 0x43),
+    fl_rgb_color(0xfd, 0xae, 0x61),
+    fl_rgb_color(0xfe, 0xe0, 0x90),
+    fl_rgb_color(0xff, 0xff, 0xbf),
+    fl_rgb_color(0xe0, 0xf3, 0xf9),
+    fl_rgb_color(0xab, 0xd9, 0xea),
+    fl_rgb_color(0x74, 0xad, 0xd1),
+    fl_rgb_color(0x45, 0x75, 0xb4),
+    fl_rgb_color(0x31, 0x36, 0x95),
 };
 
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+#define SET_FL_COLOR_TO_GL(c) { \
+    GLubyte r, g, b, a; \
+    Fl::get_color((c), r, g, b, a); \
+    glColor4ub(r, g, b, a); \
+    }
+#endif
 
 PlotWidget::PlotWidget(int X, int Y, int W, int H, const char* lbl)
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
@@ -23,10 +30,10 @@ PlotWidget::PlotWidget(int X, int Y, int W, int H, const char* lbl)
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
     : Fl_Widget(X, Y, W, H, lbl) {
 #endif
-    tick_color = { 0, 0, 0, 255 };
-    axis_color = { 192, 192, 192, 255 };
-    plot_color = { 255, 0, 0, 255 };
-    text_color = { 64, 64, 64, 255 };
+    tick_color = fl_rgb_color(0, 0, 0);
+    axis_color = fl_rgb_color(192, 192, 192);
+    plot_color = fl_rgb_color(255, 0, 0);
+    text_color = fl_rgb_color(64, 64, 64);
 
     this->axis(PlotDefaults::XAxis, PlotDefaults::YAxis);
     this->view_range(PlotDefaults::XMin, PlotDefaults::XMax, PlotDefaults::YMin, PlotDefaults::YMax);
@@ -189,7 +196,7 @@ void PlotWidget::print_text(float x, float y, uint8_t align, const char* fmt, ..
 
 void PlotWidget::draw_box() {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(tick_color.data());
+    SET_FL_COLOR_TO_GL(tick_color);
 
     glBegin(GL_LINE_LOOP);
     glVertex2f(xmin_, ymin_);
@@ -198,7 +205,7 @@ void PlotWidget::draw_box() {
     glVertex2f(xmin_, ymax_);
     glEnd();
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(tick_color[0], tick_color[1], tick_color[2]));
+    fl_color(tick_color);
 
     fl_loop(
         get_x(xmin_), get_y(ymin_),
@@ -210,10 +217,10 @@ void PlotWidget::draw_box() {
 
 void PlotWidget::draw_ticks() {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(tick_color.data());
+    SET_FL_COLOR_TO_GL(tick_color);
     glBegin(GL_LINES);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(tick_color[0], tick_color[1], tick_color[2]));
+    fl_color(tick_color);
 #endif
 
     if (ticks_x.size() > 0) {
@@ -247,9 +254,9 @@ void PlotWidget::draw_ticks() {
 
 void PlotWidget::draw_axis() {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(axis_color.data());
+    SET_FL_COLOR_TO_GL(axis_color);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(axis_color[0], axis_color[1], axis_color[2]));
+    fl_color(axis_color);
 #endif
 
     // X axis
@@ -290,7 +297,7 @@ void PlotWidget::draw_heatmap() {
             double t = 1. - (y - ymin_) / (ymax_ - ymin_);
             size_t k = static_cast<size_t>((static_cast<double>(Palette.size() - 1) * t));
 
-            glColor4ubv(Palette[k].data());
+            SET_FL_COLOR_TO_GL(Palette[k]);
 
             glVertex2f(points[i * 2].x, bar_plot_ ? 0 : ymin_);
             glVertex2f(points[i * 2 + 1].x, bar_plot_ ? 0 : ymin_);
@@ -304,7 +311,7 @@ void PlotWidget::draw_heatmap() {
                 double t = 1. - (y - ymin_) / (ymax_ - ymin_);
                 size_t k = static_cast<size_t>((static_cast<double>(Palette.size() - 1) * t));
 
-                fl_color(fl_rgb_color(Palette[k][0], Palette[k][1], Palette[k][2]));
+                fl_color(Palette[k]);
 
                 fl_polygon(
                     get_x(points[i * 2].x), get_y(bar_plot_ ? 0 : ymin_),
@@ -330,7 +337,7 @@ void PlotWidget::draw_heatmap() {
                 if (k != kPrev || (i == point_count_)) {
                     // Level changed, draw new part of heatmap
 
-                    fl_color(fl_rgb_color(Palette[kPrev][0], Palette[kPrev][1], Palette[kPrev][2]));
+                    fl_color(Palette[kPrev]);
                     fl_polygon(
                         get_x(points[j * 2].x), get_y(ymin_),
                         get_x(points[(i - 1) * 2 + 1].x), get_y(ymin_),
@@ -355,10 +362,10 @@ void PlotWidget::draw_heatmap() {
 
 void PlotWidget::draw_plot() {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(plot_color.data());
+    SET_FL_COLOR_TO_GL(plot_color);
     glBegin(GL_LINES);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(plot_color[0], plot_color[1], plot_color[2]));
+    fl_color(plot_color);
 #endif
 
     if (points.size() > 0) {
@@ -380,9 +387,9 @@ void PlotWidget::draw_plot() {
 
 void PlotWidget::draw_legend() {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(text_color.data());
+    SET_FL_COLOR_TO_GL(text_color);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(text_color[0], text_color[1], text_color[2]));
+    fl_color(text_color);
 #endif
 
     print_text((xmax_ - xmin_) / 2.0, ymax_ + margin_ * pixel_y / 2.0,

@@ -6,9 +6,6 @@
 #define DRAW_METHOD DRAW_METHOD_FLTK
 #endif
 
-using ByteColor = std::array<uint8_t, 4>;
-using FloatColor = std::array<float, 4>;
-
 using CoordinateFunc = std::function<float(float)>;
 
 void DrawLine(float x1, float y1, float x2, float y2);

@@ -3,28 +3,30 @@
 #include "WaveModel.h"
 #include "WaveWidget.h"
 
-using ByteColor = std::array<uint8_t, 4>;
+const Fl_Color BoxColor = fl_rgb_color(192);
+const Fl_Color AxesColor = fl_rgb_color(128);
+const Fl_Color TicksColor = fl_rgb_color(64);
+const Fl_Color ModelLinesColor = fl_rgb_color(0);
+const Fl_Color ModelPointsColor = fl_rgb_color(0); // (128, 192, 255);
+const Fl_Color LegendTextColor = fl_rgb_color(0);
 
-const ByteColor BoxColor = { 192, 192, 192, 255 };
-const ByteColor AxesColor = { 128, 128, 128, 255 };
-const ByteColor TicksColor = { 64, 64, 64, 255 };
-const ByteColor ModelLinesColor = { 0, 0, 0, 255 };
-const ByteColor ModelPointsColor = { 0, 0, 0, 255 }; // {128, 192, 255, 255};
-const ByteColor LegendTextColor = { 0, 0, 0, 255 };
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+#define SET_FL_COLOR_TO_GL(c) { \
+    GLubyte r, g, b, a; \
+    Fl::get_color((c), r, g, b, a); \
+    glColor4ub(r, g, b, a); \
+    }
+#endif
 
 struct Gradient {
-    ByteColor colorMin;
-    ByteColor colorMax;
+    Fl_Color colorMin;
+    Fl_Color colorMax;
 
-    std::vector<ByteColor> GetGradient(int n) const {
-        std::vector<ByteColor> colors(n);
+    std::vector<Fl_Color> GetGradient(int n) const {
+        std::vector<Fl_Color> colors(n);
         for (int i = 0; i < n; i++) {
-            ByteColor c;
-            double x = static_cast<double>(i) / (n - 1);
-            c[0] = static_cast<uint8_t>(colorMin[0] + (colorMax[0] - colorMin[0]) * x);
-            c[1] = static_cast<uint8_t>(colorMin[1] + (colorMax[1] - colorMin[1]) * x);
-            c[2] = static_cast<uint8_t>(colorMin[2] + (colorMax[2] - colorMin[2]) * x);
-            colors[i] = c;
+            float x = static_cast<float>(i) / (n - 1);
+            colors[i] = fl_color_average(colorMin, colorMax, 1.f - x);
         }
         return colors;
     }
@@ -33,8 +35,8 @@ struct Gradient {
 // Blue-white gradient
 // f7fbff - 08306b
 const Gradient HeatmapGradient = {
-    { 0xf7, 0xfb, 0xff, 0xff },
-    { 0x08, 0x30, 0x6b, 0xff }
+    fl_rgb_color(0xf7, 0xfb, 0xff),
+    fl_rgb_color(0x08, 0x30, 0x6b)
 };
 
 WaveWidget::WaveWidget(int X, int Y, int W, int H, WaveModel* model, const char* l)
@@ -164,9 +166,9 @@ void WaveWidget::draw_heatmap() {
 
         auto layerColor = heatmapColors[j];
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-        glColor4ubv(layerColor.data());
+        SET_FL_COLOR_TO_GL(layerColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-        fl_color(fl_rgb_color(layerColor[0], layerColor[1], layerColor[2]));
+        fl_color(layerColor);
 #endif
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
@@ -201,7 +203,7 @@ void WaveWidget::draw_box() {
     using namespace PlotDefaults;
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(BoxColor.data());
+    SET_FL_COLOR_TO_GL(BoxColor);
 
     glLineWidth(2);
     glBegin(GL_LINE_STRIP);
@@ -211,7 +213,7 @@ void WaveWidget::draw_box() {
     glVertex3f(XMin, YMax, 0.0);
     glEnd();
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(BoxColor[0], BoxColor[1], BoxColor[2]));
+    fl_color(BoxColor);
 
     fl_line_style(FL_SOLID, 2);
     fl_line(
@@ -230,7 +232,7 @@ void WaveWidget::draw_axes() {
     using namespace PlotDefaults;
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(AxesColor.data());
+    SET_FL_COLOR_TO_GL(AxesColor);
 
     glLineWidth(1);
     glBegin(GL_LINES);
@@ -238,7 +240,7 @@ void WaveWidget::draw_axes() {
     glVertex3f(XMax, 0.0, 0.0);
     glEnd();
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(AxesColor[0], AxesColor[1], AxesColor[2]));
+    fl_color(AxesColor);
 
     fl_line_style(FL_SOLID, 1);
     fl_line(
@@ -260,7 +262,7 @@ void WaveWidget::draw_model() {
 
     // Lines
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(ModelLinesColor.data());
+    SET_FL_COLOR_TO_GL(ModelLinesColor);
     glLineWidth(1.0);
     for (int j = 0; j < model_->zn; j++) {
         glBegin(GL_LINE_STRIP);
@@ -276,7 +278,7 @@ void WaveWidget::draw_model() {
         glEnd();
     }
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(ModelLinesColor[0], ModelLinesColor[1], ModelLinesColor[2]));
+    fl_color(ModelLinesColor);
     fl_line_style(FL_SOLID, 1);
 
     for (int j = 0; j < model_->zn; j++) {
@@ -292,7 +294,7 @@ void WaveWidget::draw_model() {
 
     // Points
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(ModelPointsColor.data());
+    SET_FL_COLOR_TO_GL(ModelPointsColor);
     glPointSize(3.0);
 
     glBegin(GL_POINTS);
@@ -305,7 +307,7 @@ void WaveWidget::draw_model() {
     }
     glEnd();
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(ModelPointsColor[0], ModelPointsColor[1], ModelPointsColor[2]));
+    fl_color(ModelPointsColor);
 
     for (int i = 0; i < model_->xn; i++) {
         for (int j = 0; j < model_->zn; j++) {
@@ -324,7 +326,7 @@ void WaveWidget::draw_ticks() {
     using namespace PlotDefaults;
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(TicksColor.data());
+    SET_FL_COLOR_TO_GL(TicksColor);
 
     glBegin(GL_LINES);
     for (int i = 0; i <= TickCountX; i++) {
@@ -339,7 +341,7 @@ void WaveWidget::draw_ticks() {
     glEnd();
 
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(TicksColor[0], TicksColor[1], TicksColor[2]));
+    fl_color(TicksColor);
     fl_line_style(FL_SOLID, 1);
 
     for (int i = 0; i <= TickCountX; i++) {
@@ -368,7 +370,7 @@ void WaveWidget::draw_legend() {
     auto headerFont = reinterpret_cast<void*>(18);
     auto textFont = reinterpret_cast<void*>(14);
 
-    fl_color(fl_rgb_color(LegendTextColor[0], LegendTextColor[1], LegendTextColor[2]));
+    fl_color(LegendTextColor);
 #endif
 
     // Draw widget label

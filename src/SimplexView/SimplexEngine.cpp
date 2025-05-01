@@ -6,10 +6,10 @@
 #include "SearchEngine.h"
 #include "SimplexEngine.h"
 
-const ByteColor SimplexColor = {0, 0, 0, 0xff};
-const ByteColor SimplexHistoryColor = {128, 128, 128, 0xff};
-const ByteColor SimplexNode = {0, 0, 0, 0xff};
-const ByteColor SimplexActiveNode = {0, 0, 0xff, 0xff};
+const Fl_Color SimplexColor = fl_rgb_color(0);
+const Fl_Color SimplexHistoryColor = fl_rgb_color(128);
+const Fl_Color SimplexNode = fl_rgb_color(0);
+const Fl_Color SimplexActiveNode = fl_rgb_color(0, 0, 0xff);
 
 void DrawSimplex(CoordinateFunc xFunc, CoordinateFunc yFunc,
         const Simplex&s) {
@@ -35,9 +35,9 @@ SimplexEngine::SimplexEngine() {
 
 void SimplexEngine::draw(CoordinateFunc xFunc, CoordinateFunc yFunc) {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(SimplexHistoryColor.data());
+    SET_FL_COLOR_TO_GL(SimplexHistoryColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(SimplexHistoryColor[0], SimplexHistoryColor[1], SimplexHistoryColor[2]));
+    fl_color(SimplexHistoryColor);
     fl_line_style(FL_SOLID, 1);
 #endif
     for (const auto &s : history_) {
@@ -45,9 +45,9 @@ void SimplexEngine::draw(CoordinateFunc xFunc, CoordinateFunc yFunc) {
     }
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(SimplexColor.data());
+    SET_FL_COLOR_TO_GL(SimplexColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(SimplexColor[0], SimplexColor[1], SimplexColor[2]));
+    fl_color(SimplexColor);
     fl_line_style(FL_SOLID, 1);
 #endif
     DrawSimplex(xFunc, yFunc, simplex_);
@@ -55,9 +55,9 @@ void SimplexEngine::draw(CoordinateFunc xFunc, CoordinateFunc yFunc) {
     for (int i=0; i<SimplexOrder; i++) {
         const auto nodeColor = (simplex_.max_node == i) ? SimplexActiveNode : SimplexNode;
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-        glColor4ubv(nodeColor.data());
+        SET_FL_COLOR_TO_GL(nodeColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-        fl_color(fl_rgb_color(nodeColor[0], nodeColor[1], nodeColor[2]));
+        fl_color(nodeColor);
 #endif
         constexpr double PointSize = 0.05;
         DrawRectangle(xFunc(simplex_.points[i].X - PointSize),

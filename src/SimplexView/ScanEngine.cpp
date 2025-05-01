@@ -5,7 +5,7 @@
 #include "SearchEngine.h"
 #include "ScanEngine.h"
 
-const ByteColor MarkerColor = {0, 64, 128, 0xff};
+const Fl_Color MarkerColor = fl_rgb_color(0, 64, 128);
 
 ScanEngine::ScanEngine() {
     search_start();
@@ -13,9 +13,9 @@ ScanEngine::ScanEngine() {
 
 void ScanEngine::draw(CoordinateFunc xFunc, CoordinateFunc yFunc) {
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubf(MarkerColor.data());
+    SET_FL_COLOR_TO_GL(MarkerColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(MarkerColor[0], MarkerColor[1], MarkerColor[2]));
+    fl_color(MarkerColor);
 #endif
     constexpr double PointSize = 0.1;
     DrawRectangle(

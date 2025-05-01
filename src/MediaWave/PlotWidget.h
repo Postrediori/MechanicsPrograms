@@ -87,10 +87,10 @@ private:
     int point_count_;
     std::vector<Point2D> points;
 
-    std::array<uint8_t, 4> tick_color;
-    std::array<uint8_t, 4> axis_color;
-    std::array<uint8_t, 4> plot_color;
-    std::array<uint8_t, 4> text_color;
+    Fl_Color tick_color;
+    Fl_Color axis_color;
+    Fl_Color plot_color;
+    Fl_Color text_color;
 
     bool bar_plot_{ false };
 

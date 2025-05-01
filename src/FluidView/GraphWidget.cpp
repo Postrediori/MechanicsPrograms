@@ -10,6 +10,12 @@ const double YMax = 1.0;
 const int Margin = 20;
 const int TickSize = 10;
 
+const Fl_Color BackgroundColor = fl_rgb_color(255);
+const Fl_Color LineColor = fl_rgb_color(0);
+const Fl_Color PlotColor = fl_rgb_color(255, 25, 50);
+const Fl_Color CurrentValueColor = fl_rgb_color(32, 128, 32);
+const Fl_Color CurrentSolutionsColor = fl_rgb_color(0, 64, 192);
+
 GraphWidget::GraphWidget(int X, int Y, int W, int H, const char* l)
     : Fl_Widget(X, Y, W, H, l) {
     this->lines_ = false;
@@ -54,7 +60,7 @@ void GraphWidget::draw() {
     fl_draw_box(FL_FLAT_BOX,
         this->x(), this->y(),
         this->w(), this->h(),
-        fl_rgb_color(255));
+        BackgroundColor);
 
     //
     // Draw axis and ticks
@@ -63,7 +69,7 @@ void GraphWidget::draw() {
 #define GET_Y(yy) ((YMax-yy)/this->pixelY_+Margin+this->y())
 
     // Draw box
-    fl_color(0);
+    fl_color(LineColor);
     fl_line_style(FL_SOLID, 1, nullptr);
 
     fl_loop(GET_X(XMin), GET_Y(YMin),
@@ -100,18 +106,18 @@ void GraphWidget::draw() {
     //
     // Draw graph
     //
-    fl_color(fl_rgb_color(255, 25, 50));
+    fl_color(PlotColor);
     for (int i = 0; i < PointCount - 1; i++) {
         fl_line(GET_X(this->graph_[i].x), GET_Y(this->graph_[i].y),
             GET_X(this->graph_[i + 1].x), GET_Y(this->graph_[i + 1].y));
     }
 
     if (this->lines_) {
-        fl_color(fl_rgb_color(32, 128, 32));
+        fl_color(CurrentValueColor);
         fl_line(GET_X(XMin), GET_Y(this->q_),
             GET_X(XMax), GET_Y(this->q_));
 
-        fl_color(fl_rgb_color(0, 64, 192));
+        fl_color(CurrentSolutionsColor);
 
         fl_line(GET_X(this->lambda1_), GET_Y(YMin),
             GET_X(this->lambda1_), GET_Y(this->q_));

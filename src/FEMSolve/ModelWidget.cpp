@@ -4,12 +4,20 @@
 #include "GraphicsUtils.h"
 #include "ModelWidget.h"
 
-const ByteColor TitleColor = { 255, 255, 255, 0xff };
-const ByteColor FixedColor = { 64, 224, 208, 0xff };
-const ByteColor ElementColor = { 0, 255, 255, 0xff };
-const ByteColor TextColor = { 255, 0, 255, 0xff };
-const ByteColor NodeColor = { 255, 255, 255, 0xff };
-const ByteColor ForceColor = { 255, 165, 0, 0xff };
+const Fl_Color TitleColor = fl_rgb_color(255);
+const Fl_Color FixedColor = fl_rgb_color(64, 224, 208);
+const Fl_Color ElementColor = fl_rgb_color(0, 255, 255);
+const Fl_Color TextColor = fl_rgb_color(255, 0, 255);
+const Fl_Color NodeColor = fl_rgb_color(255);
+const Fl_Color ForceColor = fl_rgb_color(255, 165, 0);
+
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+#define SET_FL_COLOR_TO_GL(c) { \
+    GLubyte r, g, b, a; \
+    Fl::get_color((c), r, g, b, a); \
+    glColor4ub(r, g, b, a); \
+    }
+#endif
 
 ModelWidget::ModelWidget(int X, int Y, int W, int H, FinitModel& model, const char* l)
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
@@ -151,9 +159,9 @@ void ModelWidget::draw_legend() {
 
     // Print model title
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(TitleColor.data());
+    SET_FL_COLOR_TO_GL(TitleColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(TitleColor[0], TitleColor[1], TitleColor[2]));
+    fl_color(TitleColor);
 #endif
     PrintText(largeFont,
         xFunc(xmin_ + xsize_ * TextMargin * 1.5),
@@ -169,10 +177,10 @@ void ModelWidget::draw_elements() {
         Node n1 = model_.nodes[e.nodes[0] - 1], n2 = model_.nodes[e.nodes[1] - 1];
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-        glColor4ubv(ElementColor.data());
+        SET_FL_COLOR_TO_GL(ElementColor);
         glLineWidth(1.0);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-        fl_color(fl_rgb_color(ElementColor[0], ElementColor[1], ElementColor[2]));
+        fl_color(ElementColor);
         fl_line_style(FL_SOLID, 1);
 #endif
         DrawLine(
@@ -180,9 +188,9 @@ void ModelWidget::draw_elements() {
             xFunc(n2.x), yFunc(n2.y));
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-        glColor4fv(TextColor.data());
+        SET_FL_COLOR_TO_GL(TextColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-        fl_color(fl_rgb_color(TextColor[0], TextColor[1], TextColor[2]));
+        fl_color(TextColor);
 #endif
         PrintText(normalFont,
             xFunc((n1.x + n2.x) * 0.5 - xsize_ * TextMargin),
@@ -195,9 +203,9 @@ void ModelWidget::draw_fixes() {
     using namespace PlotDefaults;
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(FixedColor.data());
+    SET_FL_COLOR_TO_GL(FixedColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(FixedColor[0], FixedColor[1], FixedColor[2]));
+    fl_color(FixedColor);
 #endif
     for (int i = 0; i < model_.fixes.size(); i++) {
         Fixture f = model_.fixes[i];
@@ -224,17 +232,17 @@ void ModelWidget::draw_nodes() {
         Node n = model_.nodes[i];
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-        glColor4ubv(NodeColor.data());
+        SET_FL_COLOR_TO_GL(NodeColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-        fl_color(fl_rgb_color(NodeColor[0], NodeColor[1], NodeColor[2]));
+        fl_color(NodeColor);
 #endif
         DrawRectangle(xFunc(n.x - xsize_ * NodeSize), yFunc(n.y - ysize_ * NodeSize),
             xFunc(n.x + xsize_ * NodeSize), yFunc(n.y + ysize_ * NodeSize));
 
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-        glColor4ubv(TextColor.data());
+        SET_FL_COLOR_TO_GL(TextColor);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-        fl_color(fl_rgb_color(TextColor[0], TextColor[1], TextColor[2]));
+        fl_color(TextColor);
 #endif
         PrintText(normalFont,
             xFunc(n.x - xsize_ * (NodeSize + TextMargin)),
@@ -248,10 +256,10 @@ void ModelWidget::draw_loads() {
 
     // Forces and loads
 #if DRAW_METHOD==DRAW_METHOD_OPENGL
-    glColor4ubv(ForceColor.data());
+    SET_FL_COLOR_TO_GL(ForceColor);
     glLineWidth(3.0);
 #elif DRAW_METHOD==DRAW_METHOD_FLTK
-    fl_color(fl_rgb_color(ForceColor[0], ForceColor[1], ForceColor[2]));
+    fl_color(ForceColor);
     fl_line_style(FL_SOLID, 3);
 #endif
     for (int i = 0; i < model_.loads.size(); i++) {

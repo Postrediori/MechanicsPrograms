@@ -6,8 +6,13 @@
 #define DRAW_METHOD DRAW_METHOD_FLTK
 #endif
 
-using ByteColor = std::array<uint8_t, 4>;
-using FloatColor = std::array<float, 4>;
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
+#define SET_FL_COLOR_TO_GL(c) { \
+    GLubyte r, g, b, a; \
+    Fl::get_color((c), r, g, b, a); \
+    glColor4ub(r, g, b, a); \
+    }
+#endif
 
 using CoordinateFunc = std::function<double(double)>;
 

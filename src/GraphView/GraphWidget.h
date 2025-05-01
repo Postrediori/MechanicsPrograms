@@ -14,14 +14,13 @@ public:
     GraphWidget(int x, int y, int w, int h, const char *lbl = nullptr);
     ~GraphWidget();
 
-    void resize(int x, int y, int w, int h) override;
+    void resize(int x, int y, int w, int h) FL_OVERRIDE;
+
+    void draw() FL_OVERRIDE;
 
     void set_model(const std::unique_ptr<Model>& m) { this->model_ = m.get(); }
 
     void set_plot(Function1D func, Area functionArea);
-
-protected:
-    void draw() override;
 
 private:
     void release_offscreen();

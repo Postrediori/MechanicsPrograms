@@ -7,8 +7,10 @@
 #include <FL/gl.h>
 #include <FL/glu.h>
 #include <FL/glut.H>
-#include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
 #include <FL/Fl_Gl_Window.H>
+#endif
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Choice.H>

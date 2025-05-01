@@ -42,7 +42,7 @@ void calcFunc(Fl_Widget* /*w*/, void* p) {
 
 // Main entry point
 int main(int argc, char **argv) {
-    auto window = new Fl_Window(700, 500, "Fluid View");
+    auto window = new Fl_Double_Window(700, 500, "Fluid View");
     window->begin();
 
     auto graph = new GraphWidget(10, 10, 480, 480);
@@ -55,6 +55,8 @@ int main(int argc, char **argv) {
 
     CalcFuncCbData cbData = { graph , buffer , inpq };
     btnCalc->callback(calcFunc, &cbData);
+
+    window->resizable(graph);
 
     window->end();
     window->show(argc, argv);

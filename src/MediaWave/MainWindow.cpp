@@ -7,7 +7,7 @@
 constexpr size_t BufferLen = 32;
 
 MainWindow::MainWindow(MediumModel* model)
-    : Fl_Window(700, 500, "MediaWave"), model_(model) {
+    : Fl_Double_Window(700, 500, "MediaWave"), model_(model) {
     create_settings_wnd();
 
     this->resizable(this);

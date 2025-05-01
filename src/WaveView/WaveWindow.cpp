@@ -8,7 +8,7 @@ constexpr double TimerInterval = 0.01;
 constexpr size_t BufferLength = 32;
 
 WaveWindow::WaveWindow(int W, int H, const char* l)
-    : Fl_Window(W, H, l) {
+    : Fl_Double_Window(W, H, l) {
     ww = new WaveWidget(10, 10, 480, 480, &model, "Wave Model");
 
     surface_choice = new Fl_Choice(570, 10, 90, 25, "Surface :");

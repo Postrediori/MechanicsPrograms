@@ -45,12 +45,11 @@ public:
     WaveWidget(int X, int Y, int W, int H, WaveModel* model = nullptr, const char* l = nullptr);
     ~WaveWidget();
 
-    void resize(int x, int y, int w, int h) override;
+    void resize(int x, int y, int w, int h) FL_OVERRIDE;
 
     void screenshot(const std::string& fileName) const;
 
-protected:
-    void draw() override;
+    void draw() FL_OVERRIDE;
 
 private:
     void draw_heatmap();

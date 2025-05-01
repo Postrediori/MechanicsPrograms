@@ -47,7 +47,9 @@ public:
     PlotWidget(int X, int Y, int W, int H, const char* lbl = nullptr);
     ~PlotWidget();
 
-    void resize(int x, int y, int w, int h) override;
+    void resize(int x, int y, int w, int h) FL_OVERRIDE;
+
+    void draw() FL_OVERRIDE;
 
     void view_range(float, float, float, float);
     void ticks(int, int);
@@ -64,8 +66,6 @@ private:
     void draw_heatmap();
     void draw_plot();
     void draw_legend();
-
-    void draw() override;
 
     float get_x(float x) const;
     float get_y(float y) const;

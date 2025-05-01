@@ -1,6 +1,6 @@
 #pragma once
 
-class WaveWindow : public Fl_Window {
+class WaveWindow : public Fl_Double_Window {
 public:
     WaveWindow(int W, int H, const char* l = nullptr);
 

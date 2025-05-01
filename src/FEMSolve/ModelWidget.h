@@ -25,12 +25,11 @@ public:
     ModelWidget(int X, int Y, int W, int H, FinitModel & model, const char* l = 0);
     ~ModelWidget();
 
-    void resize(int x, int y, int w, int h) override;
+    void resize(int x, int y, int w, int h) FL_OVERRIDE;
+
+    void draw() FL_OVERRIDE;
 
     void reload_model();
-
-protected:
-    void draw() override;
 
 private:
     void draw_legend();

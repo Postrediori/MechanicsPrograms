@@ -3,7 +3,9 @@
 #include <FL/Fl.H>
 #include <FL/fl_ask.H>
 #include <FL/Fl_Window.H>
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
 #include <FL/Fl_Gl_Window.H>
+#endif
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Menu_Bar.H>

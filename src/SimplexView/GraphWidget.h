@@ -13,12 +13,12 @@ public:
 
     void engine(SearchEngine *e) { engine_ = e; }
 
-    int handle(int e) override;
-    void resize(int x, int y, int w, int h) override;
+    int handle(int e) FL_OVERRIDE;
+    void resize(int x, int y, int w, int h) FL_OVERRIDE;
+
+    void draw() FL_OVERRIDE;
 
 private:
-    void draw() override;
-
     void draw_contour_plot();
     void draw_contour_lines();
     void draw_engine_status();

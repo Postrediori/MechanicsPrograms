@@ -1,7 +1,9 @@
 #pragma once
 
 #include <FL/Fl.H>
+#if DRAW_METHOD==DRAW_METHOD_OPENGL
 #include <FL/Fl_Gl_Window.H>
+#endif
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Text_Display.H>

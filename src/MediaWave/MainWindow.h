@@ -32,7 +32,7 @@ struct SettingsHelper {
  */
 const double TimerInterval = 0.01;
 
-class MainWindow : public Fl_Window {
+class MainWindow : public Fl_Double_Window {
 public:
     MainWindow(MediumModel*);
 

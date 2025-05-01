@@ -20,9 +20,9 @@ GraphWidget::GraphWidget(int X, int Y, int W, int H, const char* l)
     : Fl_Widget(X, Y, W, H, l) {
     this->lines_ = false;
 
-    this->pixelX_ = (XMax - XMin) / (this->w() - Margin * 2 - TickSize);
-    this->pixelY_ = (YMax - YMin) / (this->h() - Margin * 2 - TickSize);
+    update_size();
 
+    this->graph_.resize(PointCount);
     double dx = (XMax - XMin) / (double)(PointCount);
     for (int i = 0; i < PointCount; i++) {
         // double x = i / 1000.0 - 2.0;
@@ -32,7 +32,9 @@ GraphWidget::GraphWidget(int X, int Y, int W, int H, const char* l)
     }
 
     // Y Ticks
+    this->ticksY.resize((TickCount + 1) * 2);
     double dTick = (YMax - YMin) / TickCount;
+    this->ticksY.resize((TickCount + 1) * 2);
     for (int i = 0; i <= TickCount; i++) {
         double y = YMin + i * dTick;
         ticksY[i * 2].x = XMin;
@@ -45,6 +47,7 @@ GraphWidget::GraphWidget(int X, int Y, int W, int H, const char* l)
 
     // X Ticks
     dTick = (XMax - XMin) / TickCount;
+    this->ticksX.resize((TickCount + 1) * 2);
     for (int i = 0; i <= TickCount; i++) {
         double x = XMin + i * dTick;
         ticksX[i * 2].y = YMin;
@@ -54,6 +57,11 @@ GraphWidget::GraphWidget(int X, int Y, int W, int H, const char* l)
         ticksX[i * 2 + 1].y = YMin - TickSize * this->pixelY_ * tickScale;
         ticksX[i * 2 + 1].x = x;
     }
+}
+
+void GraphWidget::resize(int x, int y, int w, int h) {
+    Fl_Widget::resize(x, y, w, h);
+    update_size();
 }
 
 void GraphWidget::draw() {
@@ -125,6 +133,11 @@ void GraphWidget::draw() {
         fl_line(GET_X(this->lambda2_), GET_Y(YMin),
             GET_X(this->lambda2_), GET_Y(this->q_));
     }
+}
+
+void GraphWidget::update_size() {
+    this->pixelX_ = (XMax - XMin) / (this->w() - Margin * 2 - TickSize);
+    this->pixelY_ = (YMax - YMin) / (this->h() - Margin * 2 - TickSize);
 }
 
 void GraphWidget::set_lines(float q, float lambda1, float lambda2) {
